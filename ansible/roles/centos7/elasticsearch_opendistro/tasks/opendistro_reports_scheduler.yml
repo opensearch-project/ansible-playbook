@@ -1,0 +1,12 @@
+---
+
+- name: Reports scheduler Plugin Install | Download plugin {{ opendistro_reports_scheduler_plugin_version }}
+  get_url:
+    url: "{{ opendistro_plugin_url }}{{ opendistro_reports_scheduler_download_url }}opendistro-reports-scheduler-{{ opendistro_reports_scheduler_plugin_version }}.zip"
+    dest: "{{ es_home }}/opendistro-reports-scheduler-{{ opendistro_reports_scheduler_plugin_version }}.zip"
+  register: download
+
+- name: Reports scheduler Plugin Install | Install the plugin
+  command: "{{ es_plugin_bin_path }} install -b file://{{ es_home }}/opendistro-reports-scheduler-{{ opendistro_reports_scheduler_plugin_version }}.zip"
+  when: download.changed
+  notify: restart elasticsearch

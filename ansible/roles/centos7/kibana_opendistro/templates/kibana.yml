@@ -1,0 +1,11 @@
+server.port: 5601
+server.host: "{{ hostvars[inventory_hostname]['ip'] }}"
+elasticsearch.hosts: ["{{ es_nodes_kibana }}"]
+elasticsearch.preserveHost: true
+
+{% if opendistro_security_install_kibana  %}
+elasticsearch.username: "kibanaserver"
+elasticsearch.password: "{{ kibanaserver_password }}"
+elasticsearch.ssl.verificationMode: none
+logging.verbose: false
+{% endif %}

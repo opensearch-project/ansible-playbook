@@ -1,0 +1,12 @@
+---
+
+- name: Asynchronous search Plugin Install | Download Opendistro Elasticsearch AS plugin {{ opendistro_asyncsearch_plugin_version }}
+  get_url:
+    url: "{{ opendistro_plugin_url }}{{ opendistro_asyncsearch_download_url }}opendistro-asynchronous-search-{{ opendistro_asyncsearch_plugin_version }}.zip"
+    dest: "{{ es_home }}/opendistro-asynchronous-search-{{ opendistro_asyncsearch_plugin_version }}.zip"
+  register: download
+
+- name: Asynchronous search Plugin Install | Install the Opendistro AS plugin
+  command: "{{ es_plugin_bin_path }} install -b file://{{ es_home }}/opendistro-asynchronous-search-{{ opendistro_asyncsearch_plugin_version }}.zip"
+  when: download.changed
+  notify: restart elasticsearch

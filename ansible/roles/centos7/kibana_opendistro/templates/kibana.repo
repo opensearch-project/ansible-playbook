@@ -1,0 +1,5 @@
+[kibana-{{ kibana_repo_name }}]
+name=Elasticsearch repository for {{ kibana_repo_name }} packages
+baseurl={{ kibana_repo_url }}
+gpgcheck=0
+enabled=1

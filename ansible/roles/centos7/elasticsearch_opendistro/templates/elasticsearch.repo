@@ -1,0 +1,5 @@
+[elasticsearch-{{ es_repo_name }}]
+name=Elasticsearch repository for {{ es_repo_name }} packages
+baseurl={{ es_repo_url }}
+gpgcheck=0
+enabled=1

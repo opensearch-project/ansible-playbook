@@ -1,0 +1,24 @@
+es1 ansible_host=10.0.1.1  ansible_user=root ip=10.0.1.1 roles=data,master
+es2 ansible_host=10.0.1.2  ansible_user=root ip=10.0.1.2 roles=data,master
+es3 ansible_host=10.0.1.3  ansible_user=root ip=10.0.1.3 roles=data,master
+es4 ansible_host=10.0.1.4  ansible_user=root ip=10.0.1.4 roles=data,ingest
+es5 ansible_host=10.0.1.5  ansible_user=root ip=10.0.1.5 roles=data,ingest
+
+kibana1 ansible_host=10.0.1.6  ansible_user=root ip=10.0.1.6
+
+# List all the nodes in the ES cluster
+[es-cluster]
+es1
+es2
+es3
+es4
+es5
+
+# List all the Master eligible nodes under this group
+[master]
+es1
+es2
+es3
+
+[kibana]
+kibana1

@@ -1,0 +1,58 @@
+---
+# tasks file for elasti- name: include java.yml
+- hostname:
+    name: "{{ inventory_hostname }}"
+
+- name: Disable the selinux
+  selinux:
+    state: disabled
+
+- name: Populate the nodes to /etc/hosts
+  import_tasks: etchosts.yml
+
+- name: include java.yml
+  include: java.yml
+  when: es_java_install
+
+- name: include kibana installation
+  include: kibana.yml
+
+- name: Recursively change ownership of a plugins directory
+  file:
+    path: /usr/share/kibana/plugins
+    state: directory
+    recurse: yes
+    owner: kibana
+    group: kibana
+
+- name: include opendistro security for kibana
+  include: opendistro_security_kibana.yml
+  when: opendistro_security_install_kibana
+
+- name: include opendistro alerting for kibana
+  include: opendistro_alerting_kibana.yml
+  when: opendistro_alerting_install_kibana
+
+- name: include opendistro ism for kibana
+  include: opendistro_ism_kibana.yml
+  when: opendistro_ism_install_kibana
+
+- name: include opendistro Anomaly Detection for kibana
+  include: opendistro_ad_kibana.yml
+  when: opendistro_ad_install_kibana
+
+- name: include opendistro Reports for kibana
+  include: opendistro_reports_kibana.yml
+  when: opendistro_reports_install_kibana
+
+- name: include opendistro workbench for kibana
+  include: opendistro_workbench_kibana.yml
+  when: opendistro_workbench_install_kibana
+
+- name: Get all the installed Kibana plugins
+  command: "sudo -u kibana {{ kibana_plugin_bin_path }} list"
+  register: list_plugins
+
+- name: Show all the installed Kibana plugins
+  debug:
+    msg: "{{ list_plugins.stdout }}"

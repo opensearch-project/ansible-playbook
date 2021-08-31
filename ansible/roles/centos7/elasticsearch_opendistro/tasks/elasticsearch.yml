@@ -1,0 +1,50 @@
+---
+
+- name: add Elasticsearch repo
+  become: yes
+  template: src=elasticsearch.repo dest=/etc/yum.repos.d/elasticsearch-{{ es_repo_name }}.repo
+  when: es_use_repository
+
+- name: Install Elasticsearch
+  become: yes
+  yum:
+    name: '{{ es_package_name }}{% if es_version is defined and es_version != ""  %}-{{ es_version }}{% endif %}'
+    state: present
+    update_cache: yes
+  when: es_use_repository
+  register: redhat_elasticsearch_install_from_repo
+  notify: restart elasticsearch
+  until: redhat_elasticsearch_install_from_repo.rc == 0
+  retries: 5
+  delay: 10
+  environment:
+    ES_PATH_CONF: "/etc/elasticsearch"
+
+#Copy the config template
+- name: Copy Configuration File
+  template: src=elasticsearch.yml dest={{conf_dir}}/elasticsearch.yml group={{ es_group }} mode=0644 backup=yes
+  register: system_change
+  notify: restart elasticsearch
+
+- name: Copy jvm.options File for Instance
+  template: src=jvm.options dest={{conf_dir}}/jvm.options group={{ es_group }} mode=0644 force=yes
+  notify: restart elasticsearch
+
+- name: Make sure elasticsearch is started
+  become: yes
+  service: name=elasticsearch state=started enabled=yes
+  when: es_start_service
+
+- name: Check the Elasticsearch cluster status
+  command: curl http://{{ inventory_hostname }}:9200/_cluster/health?pretty
+  register: es_status
+  run_once: true
+
+- name: Show the Elasticsearch cluster status
+  debug:
+    msg: "{{ es_status.stdout }}"
+
+# After the cluster forms successfully for the first time,
+# remove the cluster.initial_master_nodes setting from each nodes' configuration.
+- name: Remove `cluster.initial_master_nodes` setting
+  command: sed -i '/cluster.initial_master_nodes/d' /etc/elasticsearch/elasticsearch.yml

@@ -1,0 +1,32 @@
+---
+
+- name: set fact java_state to present
+  set_fact: java_state="present"
+
+- name: set fact java_state to latest
+  set_fact: java_state="latest"
+  when: update_java == true
+
+- name: Ensure Java is installed
+  become: yes
+  yum: name={{ java }} state={{java_state}}
+
+- name: Get the installed java path
+  shell: "update-alternatives --display java | grep '^/' | awk '{print $1}' | grep 1.8.0"
+  become: yes
+  register: java_full_path
+  failed_when: False
+  changed_when: False
+
+- name: correct java version selected
+  alternatives:
+    name: java
+    path: "{{ java_full_path.stdout }}"
+    link: /usr/bin/java
+
+
+- name: register open_jdk version
+  shell: java -version 2>&1 | grep OpenJDK
+  register: open_jdk
+  ignore_errors: yes
+  changed_when: false

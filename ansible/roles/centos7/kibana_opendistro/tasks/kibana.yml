@@ -1,0 +1,25 @@
+---
+
+- name: add kibana repo
+  template:
+    src: kibana.repo
+    dest: /etc/yum.repos.d/kibana-{{ kibana_repo_name }}.repo
+
+- name: Install Kibana
+  yum:
+    name: '{{ kibana_package_name }}{% if kibana_version is defined and kibana_version != ""  %}-{{ kibana_version }}{% endif %}'
+    state: present
+    update_cache: yes
+
+- name: Copy the Configuration file
+  template:
+    src: kibana.yml
+    dest: /etc/kibana/kibana.yml
+    mode: 0644
+  notify: restart kibana
+
+- name: Make sure kibana is started
+  systemd:
+    name: kibana
+    state: started
+    enabled: yes

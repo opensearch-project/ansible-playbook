@@ -1,0 +1,12 @@
+---
+
+- name: SQL Workbench Plugin Install | Download Opendistro Kibana workbench plugin {{ opendistro_workbench_kibana_plugin_version }}
+  get_url:
+    url: "{{ opendistro_plugin_url }}{{ opendistro_workbench_kibana_download_url }}opendistroQueryWorkbenchKibana-{{ opendistro_workbench_kibana_plugin_version }}.zip"
+    dest: "/usr/share/kibana/opendistro-workbench-{{ opendistro_workbench_kibana_plugin_version }}.zip"
+  register: download
+
+- name: SQL Workbench Plugin Install | Install the Opendistro workbench plugin in kibana
+  command: "sudo -u kibana {{ kibana_plugin_bin_path }} install file:///usr/share/kibana/opendistro-workbench-{{ opendistro_workbench_kibana_plugin_version }}.zip"
+  when: download.changed
+  notify: restart kibana

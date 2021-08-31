@@ -1,0 +1,17 @@
+cluster.name: "{{ elasticsearch_cluster_name }}"
+
+node.name: "{{ inventory_hostname }}"
+
+path.data: /var/lib/elasticsearch
+
+path.logs: /var/log/elasticsearch
+
+network.host: "{{ hostvars[inventory_hostname]['ip'] }}"
+
+http.port: 9200
+
+discovery.seed_hosts: ["{{ es_nodes }}"]
+
+cluster.initial_master_nodes: ["{{ es_master_nodes }}"]
+
+node.roles: [{{ hostvars[inventory_hostname]['roles'] }}]
