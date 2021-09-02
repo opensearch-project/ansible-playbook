@@ -48,7 +48,7 @@
 - name: Security Plugin configuration | Copy the node & admin certificates to opensearch nodes
   copy:
     src: "/tmp/opensearch-nodecerts/config/{{ item }}"
-    dest: {{ os_conf_dir }}
+    dest: "{{ os_conf_dir }}"
     mode: 0600
   with_items:
     - root-ca.pem
@@ -85,16 +85,16 @@
 
 - name: Security Plugin configuration | Set the file ownerships
   file:
-    dest: {{ os_home }}
-    owner: { os_user }}
-    group: { os_user }}
+    dest: "{{ os_home }}"
+    owner: "{{ os_user }}"
+    group: "{{ os_user }}"
     recurse: yes
 
 - name: Security Plugin configuration | Set the folder permission
   file:
-    dest: {{ os_conf_dir }}
-    owner: { os_user }}
-    group: { os_user }}
+    dest: "{{ os_conf_dir }}"
+    owner: "{{ os_user }}"
+    group: "{{ os_user }}"
     mode: 0700
 
 - name: Security Plugin configuration | Restart opensearch with security configuration
@@ -115,6 +115,8 @@
   shell: >
     sed -i 's,{{ admin_password }},'$(sh {{ os_sec_plugin_tools_path }}/hash.sh -p {{ admin_password }} | tail -1)','
     {{ os_sec_plugin_conf_path }}/internal_users.yml
+  environment:
+    JAVA_HOME: "{{ os_home }}/jdk"
   run_once: true
   when: configuration.changed
 
@@ -122,17 +124,21 @@
   shell: >
     sed -i 's,{{ kibanaserver_password }},'$(sh {{ os_sec_plugin_tools_path }}/hash.sh -p {{ kibanaserver_password }} | tail -1)','
     {{ os_sec_plugin_conf_path }}/internal_users.yml
+  environment:
+    JAVA_HOME: "{{ os_home }}/jdk"
   run_once: true
   when: configuration.changed
 
 - name: Security Plugin configuration | Initialize the opensearch security index in opensearch
   shell: >
     sh {{ os_sec_plugin_tools_path }}/securityadmin.sh
-    -cacert {{ conf_dir }}/root-ca.pem
-    -cert {{ conf_dir }}/admin.pem
-    -key {{ conf_dir }}/admin.key
+    -cacert {{ os_conf_dir }}/root-ca.pem
+    -cert {{ os_conf_dir }}/admin.pem
+    -key {{ os_conf_dir }}/admin.key
     -f {{ os_sec_plugin_conf_path }}/internal_users.yml
     -nhnv -icl
     -h {{ hostvars[inventory_hostname]['ip'] }}
+  environment:
+    JAVA_HOME: "{{ os_home }}/jdk"
   run_once: true
   when: configuration.changed

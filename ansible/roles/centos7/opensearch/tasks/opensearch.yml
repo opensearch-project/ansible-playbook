@@ -8,38 +8,38 @@
 
 - name: OpenSearch Install | Create opensearch user
   user:
-    name: {{ os_user }}
+    name: "{{ os_user }}"
     state: present
     shell: /bin/bash
   when: download.changed
 
 - name: OpenSearch Install | Create home directory
   file:
-    path: {{ os_home }}
+    path: "{{ os_home }}"
     state: directory
-    owner: { os_user }}
-    group: { os_user }}
+    owner: "{{ os_user }}"
+    group: "{{ os_user }}"
   when: download.changed
 
 - name: OpenSearch Install | Extract the tar file
-  command: chdir=/tmp/ tar -xvzf opensearch.tar.gz -C {{ os_home }} --strip-components=1
+  command: chdir=/tmp/ tar -xvzf opensearch.tar.gz -C "{{ os_home }}" --strip-components=1
   when: download.changed
 
 - name: OpenSearch Install | Copy Configuration File
   template:
     src: opensearch.yml
-    dest: {{os_conf_dir}}/opensearch.yml
-    owner: {{ os_user }}
-    group: {{ os_user }}
+    dest: "{{os_conf_dir}}/opensearch.yml"
+    owner: "{{ os_user }}"
+    group: "{{ os_user }}"
     mode: 0644
     backup: yes
 
 - name: OpenSearch Install | Copy jvm.options File for Instance
   template:
     src: jvm.options
-    dest: {{os_conf_dir}}/jvm.options
-    owner: {{ os_user }}
-    group: {{ os_user }}
+    dest: "{{os_conf_dir}}/jvm.options"
+    owner: "{{ os_user }}"
+    group: "{{ os_user }}"
     mode: 0644
     force: yes
 
@@ -47,4 +47,3 @@
   template:
     src: opensearch.service
     dest: /etc/systemd/system/opensearch.service
-    enabled: True

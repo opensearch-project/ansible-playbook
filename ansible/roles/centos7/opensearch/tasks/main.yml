@@ -23,7 +23,7 @@
     enabled: yes
 
 - name: Get all the installed ES plugins
-  command: "{{ es_plugin_bin_path }} list"
+  command: "{{ os_plugin_bin_path }} list"
   register: list_plugins
 
 - name: Show all the installed ES plugins
@@ -31,4 +31,12 @@
     msg: "{{ list_plugins.stdout }}"
 
 - name: Wait for opensearch to startup
-  wait_for: host={{ hostvars[inventory_hostname]['ip'] }} port={{es_api_port}} delay=5 connect_timeout=1
+  wait_for: host={{ hostvars[inventory_hostname]['ip'] }} port={{os_api_port}} delay=5 connect_timeout=1
+
+- name: Check the opensearch status
+  command: curl http://{{ inventory_hostname }}:9200/_cluster/health?pretty -u 'admin:{{ admin_password }}' -k
+  register: os_status
+
+- name: Show the opensearch status
+  debug:
+    msg: "{{ os_status.stdout }}"
