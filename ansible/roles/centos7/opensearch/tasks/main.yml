@@ -13,9 +13,14 @@
 - name: include opensearch installation
   include: opensearch.yml
 
-- name: include opendistro security plugin for opensearch
-  include: opendistro_security.yml
-  when: opendistro_security_install
+- name: include security plugin for opensearch
+  include: security.yml
+
+- name: Make sure opensearch is started
+  service:
+    name: opensearch
+    state: started
+    enabled: yes
 
 - name: Get all the installed ES plugins
   command: "{{ es_plugin_bin_path }} list"

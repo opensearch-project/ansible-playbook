@@ -1,50 +1,48 @@
 ---
 
-- name: add Elasticsearch repo
-  become: yes
-  template: src=elasticsearch.repo dest=/etc/yum.repos.d/elasticsearch-{{ es_repo_name }}.repo
-  when: es_use_repository
+- name: OpenSearch Install | Download opensearch {{ os_version }}
+  get_url:
+    url: "{{ os_download_url }}/{{ os_version }}/opensearch-{{ os_version }}-linux-x64.tar.gz"
+    dest: "/tmp/opensearch.tar.gz"
+  register: download
 
-- name: Install Elasticsearch
-  become: yes
-  yum:
-    name: '{{ es_package_name }}{% if es_version is defined and es_version != ""  %}-{{ es_version }}{% endif %}'
+- name: OpenSearch Install | Create opensearch user
+  user:
+    name: {{ os_user }}
     state: present
-    update_cache: yes
-  when: es_use_repository
-  register: redhat_elasticsearch_install_from_repo
-  notify: restart elasticsearch
-  until: redhat_elasticsearch_install_from_repo.rc == 0
-  retries: 5
-  delay: 10
-  environment:
-    ES_PATH_CONF: "/etc/elasticsearch"
+    shell: /bin/bash
+  when: download.changed
 
-#Copy the config template
-- name: Copy Configuration File
-  template: src=elasticsearch.yml dest={{conf_dir}}/elasticsearch.yml group={{ es_group }} mode=0644 backup=yes
-  register: system_change
-  notify: restart elasticsearch
+- name: OpenSearch Install | Create home directory
+  file:
+    path: {{ os_home }}
+    state: directory
+    owner: { os_user }}
+    group: { os_user }}
+  when: download.changed
 
-- name: Copy jvm.options File for Instance
-  template: src=jvm.options dest={{conf_dir}}/jvm.options group={{ es_group }} mode=0644 force=yes
-  notify: restart elasticsearch
+- name: OpenSearch Install | Extract the tar file
+  command: chdir=/tmp/ tar -xvzf opensearch.tar.gz -C {{ os_home }} --strip-components=1
+  when: download.changed
+
+- name: OpenSearch Install | Copy Configuration File
+  template:
+    src: opensearch.yml
+    dest: {{os_conf_dir}}/opensearch.yml
+    owner: {{ os_user }}
+    group: {{ os_user }}
+    mode: 0644
+    backup: yes
+
+- name: OpenSearch Install | Copy jvm.options File for Instance
+  template:
+    src: jvm.options
+    dest: {{os_conf_dir}}/jvm.options
+    owner: {{ os_user }}
+    group: {{ os_user }}
+    mode: 0644
+    force: yes
 
 - name: Make sure elasticsearch is started
   become: yes
   service: name=elasticsearch state=started enabled=yes
-  when: es_start_service
-
-- name: Check the Elasticsearch cluster status
-  command: curl http://{{ inventory_hostname }}:9200/_cluster/health?pretty
-  register: es_status
-  run_once: true
-
-- name: Show the Elasticsearch cluster status
-  debug:
-    msg: "{{ es_status.stdout }}"
-
-# After the cluster forms successfully for the first time,
-# remove the cluster.initial_master_nodes setting from each nodes' configuration.
-- name: Remove `cluster.initial_master_nodes` setting
-  command: sed -i '/cluster.initial_master_nodes/d' /etc/elasticsearch/elasticsearch.yml
