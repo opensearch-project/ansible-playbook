@@ -1,6 +1,6 @@
 ca:
    root:
-      dn: CN=root.ca.{{ domain_name }},OU=CA,O={{ domain_name }}\, Inc.,DC={{ domain_name }}
+      dn: CN=root.ca.example.com,OU=CA,O=example.com\, Inc.,DC=example.com
       keysize: 2048
       validityDays: 730
       pkPassword: none
@@ -25,12 +25,10 @@ defaults:
 # Specify the nodes of your ES cluster here
 #
 nodes:
-{% for item in groups['es-cluster'] %}
-  - name: {{ item }}
-    dn: CN={{ item }}.{{ domain_name }},OU=Ops,O={{ domain_name }}\, Inc.,DC={{ domain_name }}
-    dns: {{ item }}.{{ domain_name }}
-    ip: {{ hostvars[item]['ip'] }}
-{% endfor %}
+  - name: node-1
+    dn: CN=node-1.example.com,OU=Ops,O=example.com\, Inc.,DC=example.com
+    dns: node-1.example.com
+    ip: 10.0.10.41
 
 ###
 ### Clients
@@ -43,5 +41,5 @@ nodes:
 #
 clients:
   - name: admin
-    dn: CN=admin.{{ domain_name }},OU=Ops,O={{ domain_name }}\, Inc.,DC={{ domain_name }}
+    dn: CN=admin.example.com,OU=Ops,O=example.com\, Inc.,DC=example.com
     admin: true
