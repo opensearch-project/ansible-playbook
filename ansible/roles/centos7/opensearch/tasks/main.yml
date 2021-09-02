@@ -1,0 +1,29 @@
+---
+
+- hostname:
+    name: "{{ inventory_hostname }}"
+
+- name: Disable the selinux
+  selinux:
+    state: disabled
+
+- name: Populate the nodes to /etc/hosts
+  import_tasks: etchosts.yml
+
+- name: include opensearch installation
+  include: opensearch.yml
+
+- name: include opendistro security plugin for opensearch
+  include: opendistro_security.yml
+  when: opendistro_security_install
+
+- name: Get all the installed ES plugins
+  command: "{{ es_plugin_bin_path }} list"
+  register: list_plugins
+
+- name: Show all the installed ES plugins
+  debug:
+    msg: "{{ list_plugins.stdout }}"
+
+- name: Wait for opensearch to startup
+  wait_for: host={{ hostvars[inventory_hostname]['ip'] }} port={{es_api_port}} delay=5 connect_timeout=1

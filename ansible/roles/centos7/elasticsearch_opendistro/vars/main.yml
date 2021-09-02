@@ -1,8 +1,0 @@
----
-# vars file for elasticsearch
-java: "{{ es_java | default('java-1.8.0-openjdk.x86_64') }}"
-default_file: "/etc/sysconfig/elasticsearch"
-es_home: "/usr/share/elasticsearch"
-
-es_repo_name: "{{ es_major_version }}"
-es_repo_url: https://artifacts.elastic.co/packages/oss-{{ es_major_version }}/yum

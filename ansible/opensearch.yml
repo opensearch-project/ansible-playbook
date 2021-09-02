@@ -1,13 +1,7 @@
 ---
 
-- name: Elasticsearch with opendistro configuration
-  hosts: es-cluster
+- name: opensearch installation & configuration
+  hosts: os-cluster
   gather_facts: false
   roles:
-    - { role: centos7/elasticsearch_opendistro }
-
-- name: Kibana with opendistro configuration
-  hosts: kibana
-  gather_facts: false
-  roles:
-    - { role: centos7/kibana_opendistro }
+    - { role: centos7/opensearch }

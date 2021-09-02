@@ -3,7 +3,7 @@
   blockinfile:
     dest: /etc/hosts
     block: |-
-      {% for item in groups['es-cluster'] %}
+      {% for item in groups['os-cluster'] %}
       {{ hostvars[item]['ip'] }} {{ item }}.{{ domain_name }} {{ item }}
       {% endfor %}
     state: present
