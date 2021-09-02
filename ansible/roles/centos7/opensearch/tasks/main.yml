@@ -34,7 +34,7 @@
   wait_for: host={{ hostvars[inventory_hostname]['ip'] }} port={{os_api_port}} delay=5 connect_timeout=1
 
 - name: Check the opensearch status
-  command: curl http://{{ inventory_hostname }}:9200/_cluster/health?pretty -u 'admin:{{ admin_password }}' -k
+  command: curl https://{{ inventory_hostname }}:9200/_cluster/health?pretty -u 'admin:{{ admin_password }}' -k
   register: os_status
 
 - name: Show the opensearch status
