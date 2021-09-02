@@ -43,6 +43,8 @@
     mode: 0644
     force: yes
 
-- name: Make sure elasticsearch is started
-  become: yes
-  service: name=elasticsearch state=started enabled=yes
+- name: OpenSearch Install | create systemd service
+  template:
+    src: opensearch.service
+    dest: /etc/systemd/system/opensearch.service
+    enabled: True
