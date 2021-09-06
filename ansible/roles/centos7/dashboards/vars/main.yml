@@ -1,0 +1,7 @@
+---
+# vars file for elasticsearch
+java: "{{ es_java | default('java-1.8.0-openjdk.x86_64') }}"
+
+
+kibana_repo_name: "{{ kibana_major_version }}"
+kibana_repo_url: https://artifacts.elastic.co/packages/oss-{{ kibana_major_version }}/yum
