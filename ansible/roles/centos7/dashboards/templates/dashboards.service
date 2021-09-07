@@ -7,7 +7,7 @@ After=network-online.target
 RuntimeDirectory=opensearch-dashboards
 PrivateTmp=true
 
-WorkingDirectory={{ os_home }}
+WorkingDirectory={{ os_dashboards_home }}
 
 User=opensearch
 Group=opensearch

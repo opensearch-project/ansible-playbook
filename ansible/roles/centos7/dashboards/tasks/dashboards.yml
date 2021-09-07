@@ -15,7 +15,7 @@
 
 - name: Dashboards Install | Create home directory
   file:
-    path: "{{ os_home }}"
+    path: "{{ os_dashboards_home }}"
     state: directory
     owner: "{{ os_user }}"
     group: "{{ os_user }}"

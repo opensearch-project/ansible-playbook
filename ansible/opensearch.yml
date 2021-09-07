@@ -5,3 +5,9 @@
   gather_facts: false
   roles:
     - { role: centos7/opensearch }
+
+- name: opensearch dashboards installation & configuration
+  hosts: dashboards
+  gather_facts: false
+  roles:
+    - { role: centos7/dashboards }

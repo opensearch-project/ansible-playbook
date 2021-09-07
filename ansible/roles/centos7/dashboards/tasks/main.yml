@@ -13,8 +13,14 @@
 - name: include dashboards installation
   include: dashboards.yml
 
+- name: Make sure opensearch dashboards is started
+  service:
+    name: dashboards
+    state: started
+    enabled: yes
+
 - name: Get all the installed dashboards plugins
-  command: "{{ os_plugin_bin_path }} list"
+  command: "sudo -u {{ os_user }} {{ os_plugin_bin_path }} list"
   register: list_plugins
 
 - name: Show all the installed dashboards plugins

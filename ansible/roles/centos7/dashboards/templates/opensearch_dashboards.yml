@@ -3,7 +3,7 @@ server.host: "{{ hostvars[inventory_hostname]['ip'] }}"
 opensearch.hosts: ["{{ os_nodes_dashboards }}"]
 opensearch.ssl.verificationMode: none
 opensearch.username: "kibanaserver"
-opensearch.password: "Test@6789"
+opensearch.password: "{{ kibanaserver_password }}"
 opensearch.requestHeadersWhitelist: [ authorization,securitytenant ]
 
 opensearch_security.multitenancy.enabled: true
