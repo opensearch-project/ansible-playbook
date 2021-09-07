@@ -1,7 +1,7 @@
-Deploy OpenSearch using Ansible
-================================
+Deploy OpenSearch with Dashboards using Ansible
+================================================
 
-## Single node OpenSearch Installation
+## Single node OpenSearch Installation with Dashboards
 
 This ansible playbook supports the following,
 
@@ -37,9 +37,8 @@ Install
     # Deploy with ansible playbook - run the playbook as root
     ansible-playbook -i inventories/opensearch/hosts opensearch.yml
 
-It will install and configure the opensearch. Once the deployment completed, you can access the opensearch with user `admin` and password which you provided for variable `admin_password`(Default password: Test@123).
+It will install and configure the opensearch. Once the deployment completed, you can access the opensearch Dashboards with user `admin` and password which you provided for variable `admin_password`(Default password: Test@123).
 
 ## TBD
 - opensearch multi-node cluster setup
-- opensearch dashbaords Installation
 - Performance analyzer plugin configuration
