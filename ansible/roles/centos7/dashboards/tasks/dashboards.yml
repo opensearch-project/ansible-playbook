@@ -37,4 +37,4 @@
 - name: Dashboards Install | create systemd service
   template:
     src: dashboards.service
-    dest: /etc/systemd/system/dashboards.service
+    dest: "{{ systemctl_path }}/dashboards.service"

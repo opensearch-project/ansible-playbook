@@ -15,3 +15,5 @@ os_nodes_dashboards: |-
         {% for item in groups['os-cluster'] -%}
           https://{{ hostvars[item]['ip'] }}:{{ os_api_port }}{% if not loop.last %}","{% endif %}
         {%- endfor %}
+
+systemctl_path: /etc/systemd/system

@@ -46,4 +46,4 @@
 - name: OpenSearch Install | create systemd service
   template:
     src: opensearch.service
-    dest: /etc/systemd/system/opensearch.service
+    dest: "{{ systemctl_path }}/opensearch.service"

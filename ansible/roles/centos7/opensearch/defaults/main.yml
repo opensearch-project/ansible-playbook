@@ -18,3 +18,5 @@ os_plugin_bin_path: /usr/share/opensearch/bin/opensearch-plugin
 os_sec_plugin_conf_path: /usr/share/opensearch/plugins/opensearch-security/securityconfig
 os_sec_plugin_tools_path: /usr/share/opensearch/plugins/opensearch-security/tools
 os_api_port: 9200
+
+systemctl_path: /etc/systemd/system

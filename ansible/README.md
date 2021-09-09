@@ -27,7 +27,6 @@ For example we need to increase the java memory heap size for opensearch,
     xms_value: 8
     xmx_value: 8
 
-You can set the reserved users(`admin` and `kibanaserver`) password using `admin_password` and `kibanaserver_password` variables.
 
 Install
 -------
@@ -35,9 +34,11 @@ Install
 ### Ansible
 
     # Deploy with ansible playbook - run the playbook as root
-    ansible-playbook -i inventories/opensearch/hosts opensearch.yml
+    ansible-playbook -i inventories/opensearch/hosts opensearch.yml --extra-vars "admin_password=Test@123 kibanaserver_password=Test@6789"
 
-It will install and configure the opensearch. Once the deployment completed, you can access the opensearch Dashboards with user `admin` and password which you provided for variable `admin_password`(Default password: Test@123).
+You should set the reserved users(`admin` and `kibanaserver`) password using `admin_password` and `kibanaserver_password` variables.
+
+It will install and configure the opensearch. Once the deployment completed, you can access the opensearch Dashboards with user `admin` and password which you provided for variable `admin_password`.
 
 ## TBD
 - opensearch multi-node cluster setup
