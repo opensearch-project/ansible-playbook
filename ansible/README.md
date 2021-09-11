@@ -1,5 +1,5 @@
-Deploy OpenSearch with Dashboards using Ansible
-================================================
+Deploy OpenSearch with OpenSearch Dashboards using Ansible
+==========================================================
 
 ## Single node OpenSearch Installation with Dashboards
 
