@@ -1,7 +1,7 @@
 ---
 name: Bug report
 about: Create a report to help us improve
-title: "[BUG][Play Name]"
+title: "[BUG][Playbook Name]"
 labels: 'bug, untriaged'
 assignees: ''
 ---
