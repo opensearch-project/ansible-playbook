@@ -19,15 +19,15 @@ Steps to reproduce the behavior:
 **Expected behavior**
 A clear and concise description of what you expected to happen.
 
-**Chart Name**
+**Playbook Name**
 Specify the Playbook which is affected?
 
 **Screenshots**
 If applicable, add screenshots to help explain your problem.
 
 **Host/Environment (please complete the following information):**
- - Helm Version: [e.g. 3.x.x]
- - Kubernetes Version: [e.g. 1.16.x]
+ - Ansible Version: [e.g. 2.x.x]
+ - Playbook Version: [e.g. 1.x.x]
 
 **Additional context**
 Add any other context about the problem here.
