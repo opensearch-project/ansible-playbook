@@ -39,6 +39,13 @@ For example if we need to increase the java memory heap size for opensearch,
     xms_value: 8
     xmx_value: 8
 
+In `inventories/opensearch/hosts` file, you can configure the node details.
+`ansible_host` is used for ansible to connect the nodes to run this playbook.
+`ip` is used in OpenSearch and Dashboards configuration.
+
+In AWS EC2,
+
+  os1 ansible_host=<Elastic/Public IP address>  ansible_user=root ip=<Private IP address>
 
 ### Install
 
