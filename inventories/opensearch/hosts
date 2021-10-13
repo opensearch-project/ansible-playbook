@@ -1,0 +1,10 @@
+os1 ansible_host=10.0.1.1  ansible_user=root ip=10.0.1.1
+
+dashboards1 ansible_host=10.0.1.2  ansible_user=root ip=10.0.1.2
+
+# List all the nodes in the os cluster
+[os-cluster]
+os1
+
+[dashboards]
+dashboards1

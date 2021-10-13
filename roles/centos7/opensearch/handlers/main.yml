@@ -1,0 +1,10 @@
+---
+# handlers file for opensearch
+- name: reload systemd configuration
+  become: yes
+  command: systemctl daemon-reload
+
+# Restart service and ensure it is enabled
+
+- name: restart opensearch
+  systemd: name=opensearch state=restarted enabled=yes

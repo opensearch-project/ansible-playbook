@@ -1,0 +1,42 @@
+---
+
+- hostname:
+    name: "{{ inventory_hostname }}"
+
+- name: Disable the selinux
+  selinux:
+    state: disabled
+
+- name: Populate the nodes to /etc/hosts
+  import_tasks: etchosts.yml
+
+- name: include opensearch installation
+  include: opensearch.yml
+
+- name: include security plugin for opensearch
+  include: security.yml
+
+- name: Make sure opensearch is started
+  service:
+    name: opensearch
+    state: started
+    enabled: yes
+
+- name: Get all the installed ES plugins
+  command: "{{ os_plugin_bin_path }} list"
+  register: list_plugins
+
+- name: Show all the installed ES plugins
+  debug:
+    msg: "{{ list_plugins.stdout }}"
+
+- name: Wait for opensearch to startup
+  wait_for: host={{ hostvars[inventory_hostname]['ip'] }} port={{os_api_port}} delay=5 connect_timeout=1
+
+- name: Check the opensearch status
+  command: curl https://{{ inventory_hostname }}:9200/_cluster/health?pretty -u 'admin:{{ admin_password }}' -k
+  register: os_status
+
+- name: Show the opensearch status
+  debug:
+    msg: "{{ os_status.stdout }}"

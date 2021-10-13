@@ -1,0 +1,40 @@
+---
+
+- name: Dashboards Install | Download opensearch dashbaord {{ os_version }}
+  get_url:
+    url: "{{ os_download_url }}-dashboards/{{ os_version }}/opensearch-dashboards-{{ os_version }}-linux-x64.tar.gz"
+    dest: "/tmp/opensearch-dashboards.tar.gz"
+  register: download
+
+- name: Dashboards Install | Create opensearch user
+  user:
+    name: "{{ os_user }}"
+    state: present
+    shell: /bin/bash
+  when: download.changed
+
+- name: Dashboards Install | Create home directory
+  file:
+    path: "{{ os_dashboards_home }}"
+    state: directory
+    owner: "{{ os_user }}"
+    group: "{{ os_user }}"
+  when: download.changed
+
+- name: Dashboards Install | Extract the tar file
+  command: chdir=/tmp/ tar -xvzf opensearch-dashboards.tar.gz -C "{{ os_dashboards_home }}" --strip-components=1
+  when: download.changed
+
+- name: Dashboards Install | Copy Configuration File
+  template:
+    src: opensearch_dashboards.yml
+    dest: "{{os_conf_dir}}/opensearch_dashboards.yml"
+    owner: "{{ os_user }}"
+    group: "{{ os_user }}"
+    mode: 0644
+    backup: yes
+
+- name: Dashboards Install | create systemd service
+  template:
+    src: dashboards.service
+    dest: "{{ systemctl_path }}/dashboards.service"

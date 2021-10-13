@@ -1,0 +1,21 @@
+## Common opensearch configuration parameters ##
+
+os_cluster_name: development-cluster
+
+# opensearch download
+os_download_url: https://artifacts.opensearch.org/releases/bundle/opensearch
+
+# opensearch version
+os_version: "1.0.1"
+
+# Configure hostnames for opensearch nodes
+# It is required to configure SSL
+# Example es1.example.com, es2.example.com
+domain_name: example.com
+
+os_user: opensearch
+
+# Java memory heap values(GB) for opensearch
+# You can change it based on server specs
+xms_value: 2
+xmx_value: 2
