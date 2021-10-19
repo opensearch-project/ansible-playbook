@@ -3,7 +3,7 @@ name: Developer Certificate of Origin Check
 on: [pull_request]
 
 jobs:
-  check:
+  check2:
     runs-on: ubuntu-latest
 
     steps:
