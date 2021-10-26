@@ -40,3 +40,4 @@
 - name: Show the opensearch status
   debug:
     msg: "{{ os_status.stdout }}"
+  failed_when: "'number_of_nodes' not in os_status.stdout"
