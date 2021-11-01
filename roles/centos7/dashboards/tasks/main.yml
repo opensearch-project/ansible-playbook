@@ -10,6 +10,9 @@
 - name: Populate the nodes to /etc/hosts
   import_tasks: etchosts.yml
 
+- name: Tune the system settings
+  import_tasks: tune.yml
+
 - name: include dashboards installation
   include: dashboards.yml
 
