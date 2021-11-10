@@ -103,6 +103,10 @@
     state: restarted
     enabled: yes
 
+- name: Pause for 3 seconds to provide sometime for OpenSearch start
+  pause:
+    seconds: 3
+
 - name: Security Plugin configuration | Copy the opensearch security internal users template
   template:
     src: internal_users.yml

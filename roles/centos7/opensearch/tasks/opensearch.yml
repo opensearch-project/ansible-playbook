@@ -28,7 +28,7 @@
 - name: OpenSearch Install | Copy Configuration File
   template:
     src: opensearch.yml
-    dest: "{{os_conf_dir}}/opensearch.yml"
+    dest: "{{os_conf_dir}}/opensearch-{{ cluster_type }}.yml"
     owner: "{{ os_user }}"
     group: "{{ os_user }}"
     mode: 0600
