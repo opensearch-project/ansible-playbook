@@ -44,8 +44,9 @@ In `inventories/opensearch/hosts` file, you can configure the node details.
 `ip` is used in OpenSearch and Dashboards configuration.
 
 In AWS EC2,
-
-  os1 ansible_host=Elastic/Public IP address ansible_user=root ip=Private IP address
+```
+  os1 ansible_host=<Elastic/Public IP> address ansible_user=root ip=<Private IP address>
+```
 
 #### Multi-node Installation
 
