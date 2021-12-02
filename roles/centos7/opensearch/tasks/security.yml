@@ -146,3 +146,11 @@
     JAVA_HOME: "{{ os_home }}/jdk"
   run_once: true
   when: configuration.changed
+
+- name: Security Plugin configuration | Cleanup local temporary directory
+  local_action:
+    module: file
+    path: /tmp/opensearch-nodecerts
+    state: absent
+  run_once: true
+  when: configuration.changed
