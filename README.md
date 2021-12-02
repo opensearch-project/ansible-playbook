@@ -1,7 +1,7 @@
 <img src="https://opensearch.org/assets/brand/SVG/Logo/opensearch_logo_default.svg" height="64px"/>
 
 - [OpenSearch Project Ansible-Playbook](#helm-charts)
-- [Single node OpenSearch Installation with Dashboards](single-node-opensearch-installation-with-dashboards)
+- [OpenSearch Installation with Dashboards](opensearch-installation-with-dashboards)
 - [Contributing](#contributing)
 - [Getting Help](#getting-help)
 - [Code of Conduct](#code-of-conduct)
@@ -13,7 +13,7 @@
 
 A community repository for Ansible Playbook of OpenSearch Project.
 
-## Single node OpenSearch Installation with Dashboards
+## OpenSearch Installation with Dashboards
 
 This ansible playbook supports the following,
 
@@ -44,8 +44,40 @@ In `inventories/opensearch/hosts` file, you can configure the node details.
 `ip` is used in OpenSearch and Dashboards configuration.
 
 In AWS EC2,
+```
+  os1 ansible_host=<Elastic/Public IP> address ansible_user=root ip=<Private IP address>
+```
 
-  os1 ansible_host=<Elastic/Public IP address>  ansible_user=root ip=<Private IP address>
+#### Multi-node Installation
+
+By default, this playbook will install five nodes opensearch cluster with respective roles (3 master, 5 data and 2 ingest nodes).
+
+```
+os1 ansible_host=10.0.1.1 ip=10.0.1.1 roles=data,master
+os2 ansible_host=10.0.1.2 ip=10.0.1.2 roles=data,master
+os3 ansible_host=10.0.1.3 ip=10.0.1.3 roles=data,master
+0s4 ansible_host=10.0.1.4 ip=10.0.1.4 roles=data,ingest
+os5 ansible_host=10.0.1.5 ip=10.0.1.5 roles=data,ingest
+```
+
+**Note**: You need to add additional nodes details in `inventories/opensearch/hosts` file for creating opensearch cluster with different node sizes.
+
+For example, if you want to create seven nodes cluster with two additional data nodes (`os6` and `os7`) then you need to include the below entries.
+
+```
+os6 ansible_host=10.0.1.6 ip=10.0.1.6 roles=data
+os7 ansible_host=10.0.1.7 ip=10.0.1.5 roles=data
+```
+
+You have to mention the opensearch node [roles](https://opensearch.org/docs/latest/opensearch/cluster/) details in `roles` variable.
+
+#### Single Node Installation
+
+For single node installation, you need to change the `cluster_type` variable in inventory file `inventories/opensearch/group_vars/all/all.yml`
+
+```
+cluster_type: single-node
+```
 
 ### Install
 

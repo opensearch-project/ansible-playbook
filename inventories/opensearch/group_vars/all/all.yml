@@ -19,3 +19,6 @@ os_user: opensearch
 # You can change it based on server specs
 xms_value: 2
 xmx_value: 2
+
+# Cluster type whether its single node or multi-node
+cluster_type: multi-node

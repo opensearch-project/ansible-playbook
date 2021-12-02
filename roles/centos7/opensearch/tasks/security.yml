@@ -103,6 +103,10 @@
     state: restarted
     enabled: yes
 
+- name: Pause for 3 seconds to provide sometime for OpenSearch start
+  pause:
+    seconds: 3
+
 - name: Security Plugin configuration | Copy the opensearch security internal users template
   template:
     src: internal_users.yml
@@ -140,5 +144,13 @@
     -h {{ hostvars[inventory_hostname]['ip'] }}
   environment:
     JAVA_HOME: "{{ os_home }}/jdk"
+  run_once: true
+  when: configuration.changed
+
+- name: Security Plugin configuration | Cleanup local temporary directory
+  local_action:
+    module: file
+    path: /tmp/opensearch-nodecerts
+    state: absent
   run_once: true
   when: configuration.changed

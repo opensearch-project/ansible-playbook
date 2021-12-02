@@ -27,11 +27,11 @@
 
 - name: OpenSearch Install | Copy Configuration File
   template:
-    src: opensearch.yml
+    src: "opensearch-{{ cluster_type }}.yml"
     dest: "{{os_conf_dir}}/opensearch.yml"
     owner: "{{ os_user }}"
     group: "{{ os_user }}"
-    mode: 0644
+    mode: 0600
     backup: yes
 
 - name: OpenSearch Install | Copy jvm.options File for Instance
@@ -40,7 +40,7 @@
     dest: "{{os_conf_dir}}/jvm.options"
     owner: "{{ os_user }}"
     group: "{{ os_user }}"
-    mode: 0644
+    mode: 0600
     force: yes
 
 - name: OpenSearch Install | create systemd service

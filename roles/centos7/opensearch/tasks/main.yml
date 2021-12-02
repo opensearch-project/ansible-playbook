@@ -19,6 +19,11 @@
 - name: include security plugin for opensearch
   include: security.yml
 
+# After the cluster forms successfully for the first time,
+# remove the cluster.initial_master_nodes setting from each nodes' configuration.
+- name: Remove `cluster.initial_master_nodes` setting from configuration
+  command: sed -i '/cluster.initial_master_nodes/d' "{{os_conf_dir}}/opensearch.yml"
+
 - name: Make sure opensearch is started
   service:
     name: opensearch
@@ -44,3 +49,13 @@
   debug:
     msg: "{{ os_status.stdout }}"
   failed_when: "'number_of_nodes' not in os_status.stdout"
+
+- name: Verify the roles of opensearch cluster nodes
+  command: curl https://{{ inventory_hostname }}:9200/_cat/nodes?v -u 'admin:{{ admin_password }}' -k
+  register: os_roles
+  run_once: true
+
+- name: Show the roles of opensearch cluster nodes
+  debug:
+    msg: "{{ os_roles.stdout }}"
+  run_once: true
