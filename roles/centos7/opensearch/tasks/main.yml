@@ -3,6 +3,12 @@
 - hostname:
     name: "{{ inventory_hostname }}"
 
+- name: Install the libselinux-python for Amazon Linux 2
+  yum:
+    name: libselinux-python
+    state: latest
+  when: ansible_distribution == "Amazon"
+
 - name: Disable the selinux
   selinux:
     state: disabled
