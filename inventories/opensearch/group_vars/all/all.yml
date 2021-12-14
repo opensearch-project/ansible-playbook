@@ -6,7 +6,10 @@ os_cluster_name: development-cluster
 os_download_url: https://artifacts.opensearch.org/releases/bundle/opensearch
 
 # opensearch version
-os_version: "1.2.0"
+os_version: "1.2.1"
+
+# opensearch dashboards version
+os_dashboards_version: "1.2.0"
 
 # Configure hostnames for opensearch nodes
 # It is required to configure SSL
