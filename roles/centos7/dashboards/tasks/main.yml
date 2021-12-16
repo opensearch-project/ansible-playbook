@@ -6,6 +6,7 @@
 - name: Disable the selinux
   selinux:
     state: disabled
+  when: ansible_distribution != "Ubuntu"
 
 - name: Populate the nodes to /etc/hosts
   import_tasks: etchosts.yml
