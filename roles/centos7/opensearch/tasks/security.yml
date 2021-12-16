@@ -13,13 +13,13 @@
 - name: Security Plugin configuration | Download certificates generation tool
   local_action:
     module: get_url
-    url: https://search.maven.org/remotecontent?filepath=com/floragunn/search-guard-tlstool/1.5/search-guard-tlstool-1.5.zip
-    dest: /tmp/opensearch-nodecerts/search-guard-tlstool.zip
+    url: https://search.maven.org/remotecontent?filepath=com/floragunn/search-guard-tlstool/1.5/search-guard-tlstool-1.5.tar.gz
+    dest: /tmp/opensearch-nodecerts/search-guard-tlstool.tar.gz
   run_once: true
   when: configuration.changed
 
 - name: Security Plugin configuration | Extract the certificates generation tool
-  local_action: command chdir=/tmp/opensearch-nodecerts tar -xvf search-guard-tlstool.zip
+  local_action: command chdir=/tmp/opensearch-nodecerts tar -xvf search-guard-tlstool.tar.gz
   run_once: true
   when: configuration.changed
 
