@@ -12,4 +12,4 @@ discovery.seed_hosts: ["{{ os_nodes }}"]
 
 cluster.initial_master_nodes: ["{{ os_master_nodes }}"]
 
-node.roles: [{{ hostvars[inventory_hostname]['roles'] }}]
+node.roles: {{ hostvars[inventory_hostname]['roles'] }}
