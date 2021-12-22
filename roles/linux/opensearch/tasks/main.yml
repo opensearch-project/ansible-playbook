@@ -3,6 +3,7 @@
 - hostname:
     name: "{{ inventory_hostname }}"
 
+# Disabling for Amazon Linux 2 as selinux is disabled by default.
 - name: Disable the selinux
   selinux:
     state: disabled

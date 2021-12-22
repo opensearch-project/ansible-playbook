@@ -27,7 +27,7 @@ This ansible playbook supports the following,
 
 ### Prerequisite
 
-- **Ansible**
+- **Ansible 2.9+**
 - **Java 8**
 
 ### Configure
