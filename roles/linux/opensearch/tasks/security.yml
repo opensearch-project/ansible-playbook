@@ -117,7 +117,7 @@
 
 - name: Security Plugin configuration | Set the Admin user password
   shell: >
-    sed -i '/hash: / s,{{ admin_password }},'$(sh {{ os_sec_plugin_tools_path }}/hash.sh -p {{ admin_password }} | tail -1)','
+    sed -i '/hash: / s,{{ admin_password }},'$(bash {{ os_sec_plugin_tools_path }}/hash.sh -p {{ admin_password }} | tail -1)','
     {{ os_sec_plugin_conf_path }}/internal_users.yml
   environment:
     JAVA_HOME: "{{ os_home }}/jdk"
@@ -126,7 +126,7 @@
 
 - name: Security Plugin configuration | Set the kibanaserver user pasword
   shell: >
-    sed -i '/hash: / s,{{ kibanaserver_password }},'$(sh {{ os_sec_plugin_tools_path }}/hash.sh -p {{ kibanaserver_password }} | tail -1)','
+    sed -i '/hash: / s,{{ kibanaserver_password }},'$(bash {{ os_sec_plugin_tools_path }}/hash.sh -p {{ kibanaserver_password }} | tail -1)','
     {{ os_sec_plugin_conf_path }}/internal_users.yml
   environment:
     JAVA_HOME: "{{ os_home }}/jdk"
@@ -135,7 +135,7 @@
 
 - name: Security Plugin configuration | Initialize the opensearch security index in opensearch
   shell: >
-    sh {{ os_sec_plugin_tools_path }}/securityadmin.sh
+    bash {{ os_sec_plugin_tools_path }}/securityadmin.sh
     -cacert {{ os_conf_dir }}/root-ca.pem
     -cert {{ os_conf_dir }}/admin.pem
     -key {{ os_conf_dir }}/admin.key
