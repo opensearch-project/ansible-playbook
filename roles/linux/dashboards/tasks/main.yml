@@ -3,9 +3,11 @@
 - hostname:
     name: "{{ inventory_hostname }}"
 
+# Disabling for Amazon Linux 2 as selinux is disabled by default.
 - name: Disable the selinux
   selinux:
     state: disabled
+  when: ansible_distribution != "Amazon"
 
 - name: Populate the nodes to /etc/hosts
   import_tasks: etchosts.yml
