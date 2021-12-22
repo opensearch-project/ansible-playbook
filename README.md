@@ -18,7 +18,7 @@ A community repository for Ansible Playbook of OpenSearch Project.
 This ansible playbook supports the following,
 
 - Can be deployed on baremetal and VMs(AWS EC2)
-- Supports most popular **Linux distributions**(Centos7, RHEL7, Amazon Linux2)
+- Supports most popular **Linux distributions**(Centos7, RHEL7, Amazon Linux2, Ubuntu 20.04)
 - Install and configure the Apache2.0 opensource OpenSearch
 - Configure TLS/SSL for OpenSearch transport layer(Nodes to Nodes communication) and REST API layer
 - Generate self-signed certificates to configure TLS/SSL for opensearch
