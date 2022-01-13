@@ -9,8 +9,8 @@ PrivateTmp=true
 
 WorkingDirectory={{ os_home }}
 
-User=opensearch
-Group=opensearch
+User={{ os_user }}
+Group={{ os_user }}
 
 ExecStart={{ os_home }}/bin/opensearch -p {{ os_home }}/opensearch.pid -q
 
