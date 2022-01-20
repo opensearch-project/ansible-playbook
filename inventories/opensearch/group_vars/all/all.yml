@@ -16,8 +16,6 @@ os_dashboards_version: "1.2.0"
 # Example es1.example.com, es2.example.com
 domain_name: example.com
 
-os_user: opensearch
-
 # Java memory heap values(GB) for opensearch
 # You can change it based on server specs
 xms_value: 2
@@ -25,3 +23,8 @@ xmx_value: 2
 
 # Cluster type whether its single node or multi-node
 cluster_type: multi-node
+
+# opensearch user info
+os_user: opensearch
+
+os_dashboards_user: opensearch-dashboards

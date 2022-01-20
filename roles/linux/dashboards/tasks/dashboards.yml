@@ -8,7 +8,7 @@
 
 - name: Dashboards Install | Create opensearch user
   user:
-    name: "{{ os_user }}"
+    name: "{{ os_dashboards_user }}"
     state: present
     shell: /bin/bash
   when: download.changed
@@ -17,8 +17,8 @@
   file:
     path: "{{ os_dashboards_home }}"
     state: directory
-    owner: "{{ os_user }}"
-    group: "{{ os_user }}"
+    owner: "{{ os_dashboards_user }}"
+    group: "{{ os_dashboards_user }}"
   when: download.changed
 
 - name: Dashboards Install | Extract the tar file
@@ -29,8 +29,8 @@
   template:
     src: opensearch_dashboards.yml
     dest: "{{os_conf_dir}}/opensearch_dashboards.yml"
-    owner: "{{ os_user }}"
-    group: "{{ os_user }}"
+    owner: "{{ os_dashboards_user }}"
+    group: "{{ os_dashboards_user }}"
     mode: 0644
     backup: yes
 
