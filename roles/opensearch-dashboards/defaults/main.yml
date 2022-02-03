@@ -1,37 +1,53 @@
 ---
+# same as for Opensearch role
 opensearch_dashboards_update_hostname: false
 opensearch_dashboards_update_hosts_file: false
 opensearch_dashboards_disable_selinux: true
 
+# unix user/group to run dashboards with
 opensearch_dashboards_user: "dashboards"
 opensearch_dashboards_group: "dashboards"
 
-
+# where and what Opensearch Dashboards release to fetch
 opensearch_dashboards_arch: "x64" # TODO infer from facts
 opensearch_dashboards_version: "1.2.0"
 opensearch_dashboards_artifacts_baseurl: "https://artifacts.opensearch.org/releases/bundle"
 opensearch_dashboards_archive_url: "{{ opensearch_dashboards_artifacts_baseurl }}/opensearch-dashboards/{{ opensearch_dashboards_version }}/opensearch-dashboards-{{ opensearch_dashboards_version }}-linux-{{ opensearch_dashboards_arch }}.tar.gz"
 
-
+# use these parameters to upload an archive from ansible controller
+# instead of downloading directly from hosts (useful in airgapped env)
 opensearch_dashboards_archive_download_from_nodes: true
 opensearch_dashboards_archive_download_and_push_from_local: false
 
+# where to unpack archive and configuration
 opensearch_dashboards_home: /usr/share/opensearch-dashboards
 opensearch_dashboards_conf_dir: /etc/opensearch-dashboards
 
-# opensearch_dashboards_backend_hosts: # list of backend urls - scheme+host+port
-# opensearch_dashboards_backend_hostgroup: # ansible group, scheme and port infered from _backend_{port,ssl}
+# required list of backend urls - scheme+host+port
+# opensearch_dashboards_backend_hosts:
+# *OR* ansible host group group name
+# opensearch_dashboards_backend_hostgroup:
+#
+# scheme and port infered from _backend_{port,ssl} below
 opensearch_dashboards_backend_port: "9200"
 opensearch_dashboards_backend_ssl: true
+
+# hostname and port to bind to
 opensearch_dashboards_port: "5601"
 opensearch_dashboards_host: "0.0.0.0"
 
-# none, certificate or full
+# none, certificate or full - see Dashboards doc
+# lets tls/ssl verify all by default
 opensearch_dashboards_ssl_verify: "full"
 
+# should be made available if backend CA cert is not in system trust store
+# see playbook examples on how to push this data if using dummy PKI setup
 #opensearch_dashboards_ssl_cacerts:
 #opensearch_dashboards_ssl_cacert_content:
 opensearch_dashboards_backend_username: "kibanaserver"
+# required - plain text password of the kibana user to connect to backend
+# OpenSearch cluster
 #opensearch_dashboards_backend_password:
 
+# see Dashboards configuration doc
 opensearch_dashboards_security_cookie_secure: "{{ 'true' if opensearch_dashboards_backend_ssl | bool else 'false' }}"

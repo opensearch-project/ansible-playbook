@@ -1,0 +1,4 @@
+[oscluster]
+oscluster-01.vagrant.test ansible_user=root
+oscluster-02.vagrant.test ansible_user=root
+oscluster-03.vagrant.test ansible_user=root

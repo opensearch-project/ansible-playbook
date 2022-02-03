@@ -1,35 +1,50 @@
 ---
 
+# where and what Opensearch release to fetch
 opensearch_arch: "x64" # TODO infer from facts
 opensearch_version: "1.2.2"
 opensearch_artifacts_baseurl: "https://artifacts.opensearch.org/releases/bundle"
+opensearch_archive_url: "{{ opensearch_artifacts_baseurl }}/opensearch/{{ opensearch_version }}/opensearch-{{ opensearch_version }}-linux-{{ opensearch_arch }}.tar.gz"
 
-opensearch_security_restapi_roles_enabled:
-  - "all_access"
-  - "security_rest_api_access"
+# disable SE Linux on relevant systems
+opensearch_disable_selinux: true
 
-opensearch_http_port: 9200
-opensearch_transport_port: 9300
+# update /etc/hostname - you probably don't want this
+opensearch_update_hostname: false
+# update /etc/hosts - you probably don't want this unless your DNS resolver
+# can't find cluster member fqdn
+opensearch_update_hosts_file: false
 
+# use these parameters to upload an archive from ansible controller
+# instead of downloading directly from hosts (useful in airgapped env)
 opensearch_archive_download_from_nodes: true
 opensearch_archive_download_and_push_from_local: false
 
-_opensearch_bootstrap_admin: "bootstrap-admin"
+# API querying port
+opensearch_http_port: 9200
+# Transport port (intra cluster)
+opensearch_transport_port: 9300
 
 opensearch_path_logs: "/var/log/opensearch"
 opensearch_path_data: "/var/lib/opensearch/data"
 
+# use the shipped java JRE (OpenJDK)
+# currently only tested on Debian 11 an CentOS 7
 opensearch_install_java: no
 
+# how to infer cluster member host address (for network/listen)
 opensearch_host_address: "{{ ansible_default_ipv4.address }}"
+# assume inventory hostnames are fqdn
 opensearch_use_inventory_hostname: yes
 
+# cluster nodes roles and name- see OpenSearch documentation
 opensearch_master_node: yes
 opensearch_data_node: yes
 opensearch_ingest_node: yes
-
 opensearch_node_name: "{{ opensearch_cluster_name }}-{{ inventory_hostname }}"
 
+# default config and custom config merge
+# please push custom configuration using the opensearch_config dict
 opensearch_listen_on_fqdn: true
 opensearch_config: {}
 opensearch_default_config:
@@ -47,43 +62,58 @@ opensearch_default_config:
   http.port: "{{ opensearch_http_port }}"
   transport.port: "{{ opensearch_transport_port }}"
 
-
 _opensearch_config: "{{ opensearch_config | combine(opensearch_default_config, recursive=True) }}"
 
-# opensearch_cluster_name: ""
-# opensearch_hostgroup: ""
-# opensearch_single_node: false
+# opensearch.yml config item
+opensearch_security_restapi_roles_enabled:
+  - "all_access"
+  - "security_rest_api_access"
 
-# should be only once when initiating cluster
+# required cluster name
+# opensearch_cluster_name: ""
+# required ansible hostgroup for cluster
+# opensearch_hostgroup: ""
+
+# set to true if you're deploying a single node env
+opensearch_single_node: false
+
+# should be true only once when initiating cluster
+# *DO NOT CHANGE* managed by set_facts during run
 opensearch_bootstrap_cluster: false
 
-opensearch_archive_url: "{{ opensearch_artifacts_baseurl }}/opensearch/{{ opensearch_version }}/opensearch-{{ opensearch_version }}-linux-{{ opensearch_arch }}.tar.gz"
-
+# default unix user and group
 opensearch_user: "opensearch"
 opensearch_group: "{{ opensearch_user }}"
 
-
-opensearch_disable_selinux: true
-opensearch_update_hostname: false
-opensearch_update_hosts_file: false
-
+# use a dummy PKI (CA + sigs) - probably better as you may want to avoid
+# rerolling certs for your whole every 3, 12 or 24 months
 opensearch_use_dummy_pki: false
+
+# you can override this variable with --extra-vars when calling playbook
+# force a full CSR and signature reroll of all nodes - use with care
+# could be useful if you had issue with your CA or certs expired
+# require opensearch_use_dummy_pki to be enabled
 opensearch_force_csr_regen: false
 
+# homedir for archive unpacking
 opensearch_home: /usr/share/opensearch
-#opensearch_conf_dir: /usr/share/opensearch/config
+
+# configuration should be in a separate directory to avoid unarchive to
+# overwrite with the default out of the box configuration files
 opensearch_conf_dir: /etc/opensearch
 opensearch_ssl_conf_dir: "{{ opensearch_conf_dir }}/ssl"
-opensearch_plugin_bin_path: /usr/share/opensearch/bin/opensearch-plugin
-opensearch_sec_plugin_conf_path: /usr/share/opensearch/plugins/opensearch-security/securityconfig
-opensearch_sec_plugin_tools_path: /usr/share/opensearch/plugins/opensearch-security/tools
 
+# as recommended by Opensearch doc
+# https://opensearch.org/docs/latest/opensearch/install/important-settings
 opensearch_filemax: "65536"
 
+# as recommended by Opensearch doc - half of system physical memory
+# https://www.elastic.co/guide/en/elasticsearch/reference/master/advanced-configuration.html#set-jvm-heap-size
 opensearch_heap_size: "{{ '2' if ansible_memtotal_mb < 2048 else ( ansible_memtotal_mb / 1024 / 2 ) | int}}g"
 
-
 ## TLS configuration
+## shouldn't be changed if using opensearch_use_dummy_pki
+## otherwise should point to your PKI/Security team provided key material
 opensearch_plugins_security_ssl_transport_pemkey_filepath: "{{ opensearch_ssl_conf_dir }}/opensearch-{{ opensearch_cluster_name }}-node.key.p8"
 #opensearch_plugins_security_ssl_transport_pemkey_password:
 opensearch_plugins_security_ssl_transport_pemcert_filepath: "{{ opensearch_ssl_conf_dir }}/opensearch-{{ opensearch_cluster_name }}-node.pem"
@@ -95,4 +125,12 @@ opensearch_plugins_security_ssl_http_pemkey_filepath: "{{ opensearch_ssl_conf_di
 opensearch_plugins_security_ssl_http_pemcert_filepath: "{{ opensearch_ssl_conf_dir }}/opensearch-{{ opensearch_cluster_name }}-node.pem"
 #opensearch_plugins_security_ssl_http_pemtrustedcas_filepath:
 
+# is generated from nodes cert CommonName if using opensearch_use_dummy_pki
+# otherwise you should provide regular expressions matching your certficate CN
+# see Opensearch configuration documentation
+# https://opensearch.org/docs/latest/security-plugin/configuration/tls/#configure-node-certificates
 opensearch_plugins_security_nodes_dn: []
+
+# shouldn't be changed - used for cluster init
+_opensearch_bootstrap_admin: "bootstrap-admin"
+

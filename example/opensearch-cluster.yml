@@ -1,0 +1,34 @@
+# cluster deployment, see inventory and group_vars for related hosts
+# and variables definitions
+# it's assumed the hosts ansible_fqdn are resolvable
+- hosts: oscluster
+  become: true
+  roles:
+    - role: opensearch
+      tags: opensearch
+
+# with a pre_tasks we fetch & deploy the backend CA certificate and it's then
+# made available for dashboards/kibana
+#
+# in this setup we deploy this on the cluster first node, but it could be a
+# dedicated system for dashboards/kibana
+- hosts: oscluster-01.vagrant.test
+  become: true
+  pre_tasks:
+  - name: slurp CA file
+    slurp:
+      src: "/etc/opensearch/ssl/opensearch-{{ opensearch_cluster_name }}-CA.pem"
+    register: _opensearch_ca
+    delegate_to: "{{ groups[opensearch_dashboards_backend_hostgroup] | first }}"
+  - set_fact:
+      opensearch_ca_backend: "{{ _opensearch_ca.content | b64decode }}"
+  roles:
+    - role: opensearch-dashboards
+      tags: dashboards
+  vars:
+    # the ansible host group name of the backend opensearch cluster
+    opensearch_dashboards_backend_hostgroup: "oscluster"
+    # see group_vars/ for your kibanaserver password
+    opensearch_dashboards_backend_password: "kibana"
+    opensearch_dashboards_ssl_cacert_content: "{{ opensearch_ca_backend }}"
+    opensearch_cluster_name: "os-test-cluster"

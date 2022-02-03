@@ -1,0 +1,21 @@
+# the opensearch cluster name as displayed in API
+opensearch_cluster_name: "os-test-cluster"
+# the ansible hostgroup to install cluster to - see inventory file
+opensearch_hostgroup: "oscluster"
+
+# install the system (Debian or CentOS) java JRE
+opensearch_install_java: yes
+
+# use a self contained PKI (role will created CA file and roll out signed
+# certificates)
+opensearch_use_dummy_pki: yes
+
+# minimum role password to bootstrap cluster
+opensearch_admin_password: admin # changeme
+opensearch_kibanaserver_password: kibana # changeme
+
+# if your DNS resolver can't resolve hosts fqdn set to true
+opensearch_update_hosts_file: false
+
+
+# for other infos consult the defaults/main.yml files (value will be commented)
