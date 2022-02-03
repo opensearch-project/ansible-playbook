@@ -13,12 +13,15 @@
 
 A community repository for Ansible Playbook of OpenSearch Project.
 
+Fork from [http://github.com/opensearch-project/ansible-playbook] including
+cluster initialization
+
 ## Single node OpenSearch Installation with Dashboards
 
 This ansible playbook supports the following,
 
 - Can be deployed on baremetal and VMs(AWS EC2)
-- Supports most popular **Linux distributions**(Centos7, RHEL7)
+- Supports most popular **Linux distributions**(Centos7, RHEL7, Debian 11)
 - Install and configure the Apache2.0 opensource OpenSearch
 - Configure TLS/SSL for OpenSearch transport layer(Nodes to Nodes communication) and REST API layer
 - Generate self-signed certificates to configure TLS/SSL for opensearch
@@ -27,35 +30,11 @@ This ansible playbook supports the following,
 
 ### Prerequisite
 
-- **Ansible**
-- **Java 8**
+- **Ansible 2.9+**
 
-### Configure
+### Configure & install 
 
-Refer the file `inventories/opensearch/group_vars/all/all.yml` to change the default values.
-
-For example if we need to increase the java memory heap size for opensearch,
-
-    xms_value: 8
-    xmx_value: 8
-
-In `inventories/opensearch/hosts` file, you can configure the node details.
-`ansible_host` is used for ansible to connect the nodes to run this playbook.
-`ip` is used in OpenSearch and Dashboards configuration.
-
-In AWS EC2,
-
-  os1 ansible_host=<Elastic/Public IP address>  ansible_user=root ip=<Private IP address>
-
-### Install
-
-
-    # Deploy with ansible playbook - run the playbook as root
-    ansible-playbook -i inventories/opensearch/hosts opensearch.yml --extra-vars "admin_password=Test@123 kibanaserver_password=Test@6789"
-
-You should set the reserved users(`admin` and `kibanaserver`) password using `admin_password` and `kibanaserver_password` variables.
-
-It will install and configure the opensearch. Once the deployment completed, you can access the opensearch Dashboards with user `admin` and password which you provided for variable `admin_password`.
+See `example/README.md`
 
 ## Contributing
 
