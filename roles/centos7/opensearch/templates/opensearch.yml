@@ -1,11 +1,56 @@
-cluster.name: "{{ os_cluster_name }}"
+{{ _opensearch_config | to_nice_yaml(indent=2) }}
 
-node.name: "{{ inventory_hostname }}"
+cluster.name: "{{ opensearch_cluster_name }}"
 
-network.host: "{{ hostvars[inventory_hostname]['ip'] }}"
+node.name: "{{ opensearch_node_name }}"
 
-http.port: 9200
+path.logs: "{{ opensearch_path_logs }}"
+path.data: "{{ opensearch_path_data }}"
 
+{% if opensearch_single_node is defined and opensearch_single_node | bool %}
 discovery.type: single-node
+{% endif %}
+
+{{ { 'plugins.security.restapi.roles_enabled': opensearch_security_restapi_roles_enabled } | to_nice_yaml(indent=2) }}
 
 bootstrap.memory_lock: true
+
+{% if opensearch_hostgroup is defined %}
+{% set master_nodes = groups[opensearch_hostgroup+"_master_True"] %}
+{% if opensearch_use_inventory_hostname %}
+{% set seed_hosts = master_nodes %}
+{% else %}
+{% set seed_hosts = master_nodes | map('extract', hostvars) | map(attribute='opensearch_host_address') | list %}
+{% endif %}
+{% set initial_master_nodes = master_nodes | map('extract', hostvars) | map(attribute='opensearch_node_name') | list %}
+{{ { 'discovery.seed_hosts': seed_hosts } | to_nice_yaml(indent=2) }}
+{% if inventory_hostname in groups[opensearch_hostgroup+"_master_True"] and ( opensearch_bootstrap_cluster | bool ) and not ( bootstrap_cleanup | bool ) %}
+{{ { 'cluster.initial_master_nodes': initial_master_nodes } | to_nice_yaml(indent=2) }}
+
+{% set _plugins_security_admin_dn = [ "CN="+_opensearch_bootstrap_admin ] %}
+{{ { 'plugins.security.authcz.admin_dn': _plugins_security_admin_dn } | to_nice_yaml(indent=2) }}
+{% endif %}
+{% endif %}
+
+{% if opensearch_hostgroup is defined or not ( opensearch_single_node | bool ) %}
+{% if opensearch_plugins_security_nodes_dn | length > 0 %}
+{% set _plugins_security_nodes_dn = opensearch_plugins_security_nodes_dn %}
+{% else %}
+{% set _plugins_security_nodes_dn = groups[opensearch_hostgroup] | map('extract', hostvars) | map(attribute='ansible_fqdn') | map('regex_replace', '^', 'CN=') | list %}
+{% endif %}
+{{ { 'plugins.security.nodes_dn': _plugins_security_nodes_dn } | to_nice_yaml(indent=2) }}
+
+plugins.security.ssl.transport.pemkey_filepath: "{{ opensearch_plugins_security_ssl_transport_pemkey_filepath }}"
+{% if opensearch_plugins_security_ssl_transport_pemkey_password is defined  %}
+plugins.security.ssl.transport.pemkey.password: "{{ opensearch_plugins_security_ssl_transport_pemkey_password }}"
+{% endif %}
+plugins.security.ssl.transport.pemcert_filepath: "{{ opensearch_plugins_security_ssl_transport_pemcert_filepath }}"
+plugins.security.ssl.transport.pemtrustedcas_filepath: "{{ opensearch_plugins_security_ssl_transport_pemtrustedcas_filepath }}"
+
+plugins.security.ssl.http.enabled: "{{ 'true' if ( opensearch_plugins_security_ssl_http_enabled | bool ) else 'false' }}"
+plugins.security.ssl.http.pemkey_filepath: "{{ opensearch_plugins_security_ssl_http_pemkey_filepath }}"
+{% if opensearch_plugins_security_ssl_http_pemkey_password is defined %}
+plugins.security.ssl.http.pemkey.password: "{{ opensearch_plugins_security_ssl_http_pemkey_password }}"
+{% endif %}
+plugins.security.ssl.http.pemcert_filepath: "{{ opensearch_plugins_security_ssl_http_pemcert_filepath }}"
+{% endif %}

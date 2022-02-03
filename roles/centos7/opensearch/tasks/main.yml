@@ -1,20 +1,93 @@
 ---
 
+# TODOs:
+# - check cluster name is alnum - only
+#
+
+- assert:
+    that:
+      - opensearch_cluster_name is defined
+      - opensearch_hostgroup is defined or opensearch_single_node | bool
+  tags: always
+
+- name: gather os specific variables
+  tags: always
+  include_vars: "{{ item }}"
+  with_first_found:
+    - "{{ ansible_distribution }}-{{ ansible_distribution_version }}.yml"
+    - "{{ ansible_distribution }}-{{ ansible_distribution_major_version }}.yml"
+    - "{{ ansible_distribution }}.yml"
+    - "{{ ansible_os_family }}.yml"
+    - "{{ ansible_system }}.yml"
+
+- name: install Java runtime
+  package:
+    name: "{{ opensearch_jre_package }}"
+    state: present
+  when:
+    - opensearch_install_java is defined
+    - opensearch_install_java | bool
+
+- name: Gather basic facts
+  set_fact:
+    opensearch_host_address: "{{ opensearch_host_address }}"
+    opensearch_node_name: "{{ opensearch_node_name }}"
+  tags: always
+
 - hostname:
     name: "{{ inventory_hostname }}"
+  when:
+    - opensearch_update_hostname is defined
+    - opensearch_update_hostname | bool
 
-- name: Disable the selinux
+- name: Disable SElinux
   selinux:
     state: disabled
+  when:
+    - ansible_os_family == "Redhat"
+    - opensearch_disable_selinux is defined
+    - opensearch_disable_selinux | bool
 
 - name: Populate the nodes to /etc/hosts
   import_tasks: etchosts.yml
+  when:
+    - opensearch_update_hosts_file is defined
+    - opensearch_update_hosts_file | bool
 
 - name: Tune the system settings
   import_tasks: tune.yml
 
+- name: Create opensearch group
+  group:
+    name: "{{ opensearch_group }}"
+    state: present
+    system: yes
+
+- name: Create opensearch user
+  user:
+    name: "{{ opensearch_user }}"
+    group: "{{ opensearch_group }}"
+    state: present
+    system: yes
+    home: "{{ opensearch_home }}"
+    create_home: false
+
+- name: Setup X509 certificates with dummy PKI
+  import_tasks: dummy-pki.yml
+  when:
+    - opensearch_use_dummy_pki is defined
+    - opensearch_use_dummy_pki | bool
+
 - name: include opensearch installation
   include: opensearch.yml
+
+- name: Wait for opensearch to startup
+  wait_for:
+    host: 'localhost'
+    port: "{{ opensearch_transport_port }}"
+    delay: 5
+    connect_timeout: 2
+  tags: always
 
 - name: include security plugin for opensearch
   include: security.yml
@@ -25,22 +98,31 @@
     state: started
     enabled: yes
 
-- name: Get all the installed ES plugins
-  command: "{{ os_plugin_bin_path }} list"
-  register: list_plugins
+- name: Regenerate Configuration File after bootstrap
+  template:
+    src: opensearch.yml
+    dest: "{{ opensearch_conf_dir }}/opensearch.yml"
+    owner: "{{ opensearch_user }}"
+    group: "{{ opensearch_group }}"
+    mode: "0640"
+  vars:
+    bootstrap_cleanup: true
+  when:
+    - opensearch_bootstrap_cluster is defined
+    - opensearch_bootstrap_cluster | bool
+  notify: restart opensearch
 
-- name: Show all the installed ES plugins
-  debug:
-    msg: "{{ list_plugins.stdout }}"
+- name: force restart if required
+  meta: flush_handlers
+  tags: always
 
-- name: Wait for opensearch to startup
-  wait_for: host={{ hostvars[inventory_hostname]['ip'] }} port={{os_api_port}} delay=5 connect_timeout=1
-
-- name: Check the opensearch status
-  command: curl https://{{ inventory_hostname }}:9200/_cluster/health?pretty -u 'admin:{{ admin_password }}' -k
-  register: os_status
-
-- name: Show the opensearch status
-  debug:
-    msg: "{{ os_status.stdout }}"
-  failed_when: "'number_of_nodes' not in os_status.stdout"
+- name: Wait for opensearch after bootstrap cleanup restart
+  wait_for:
+    host: 'localhost'
+    port: "{{ opensearch_transport_port }}"
+    delay: 5
+    connect_timeout: 2
+  when:
+    - opensearch_bootstrap_cluster is defined
+    - opensearch_bootstrap_cluster | bool
+  tags: always

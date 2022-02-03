@@ -7,42 +7,17 @@ After=network-online.target
 RuntimeDirectory=opensearch-dashboards
 PrivateTmp=true
 
-WorkingDirectory={{ os_dashboards_home }}
+WorkingDirectory={{ opensearch_dashboards_home }}
 
-User=opensearch
-Group=opensearch
+User={{ opensearch_dashboards_user }}
+Group={{ opensearch_dashboards_group }}
 
-ExecStart={{ os_dashboards_home }}/bin/opensearch-dashboards -q
+Environment=OSD_PATH_CONF={{ opensearch_dashboards_conf_dir }}
+
+ExecStart={{ opensearch_dashboards_home }}/bin/opensearch-dashboards -q
 
 StandardOutput=journal
 StandardError=inherit
-
-# Specifies the maximum file descriptor number that can be opened by this process
-LimitNOFILE=65536
-
-# Specifies the maximum number of processes
-LimitNPROC=4096
-
-# Specifies the maximum size of virtual memory
-LimitAS=infinity
-
-# Specifies the maximum file size
-LimitFSIZE=infinity
-
-# Disable timeout logic and wait until process is stopped
-TimeoutStopSec=0
-
-# SIGTERM signal is used to stop the Java process
-KillSignal=SIGTERM
-
-# Send the signal only to the JVM rather than its control group
-KillMode=process
-
-# Java process is never killed
-SendSIGKILL=no
-
-# When a JVM receives a SIGTERM signal it exits with code 143
-SuccessExitStatus=143
 
 [Install]
 WantedBy=multi-user.target

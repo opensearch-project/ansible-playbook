@@ -6,19 +6,21 @@ After=network-online.target
 [Service]
 RuntimeDirectory=opensearch
 PrivateTmp=true
+Type=simple
 
-WorkingDirectory={{ os_home }}
+WorkingDirectory={{ opensearch_home }}
 
-User=opensearch
-Group=opensearch
+User={{ opensearch_user }}
+Group={{ opensearch_group }}
 
-ExecStart={{ os_home }}/bin/opensearch -p {{ os_home }}/opensearch.pid -q
+Environment=OPENSEARCH_PATH_CONF={{ opensearch_conf_dir }}
+ExecStart={{ opensearch_home }}/bin/opensearch
 
 StandardOutput=journal
 StandardError=inherit
 
 # Specifies the maximum file descriptor number that can be opened by this process
-LimitNOFILE=65536
+LimitNOFILE={{ opensearch_filemax }}
 
 # Specifies the memory lock settings
 LimitMEMLOCK=infinity

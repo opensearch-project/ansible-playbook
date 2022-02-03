@@ -1,49 +1,99 @@
 ---
 
-- name: OpenSearch Install | Download opensearch {{ os_version }}
+- name: OpenSearch Install | Master nodes group
+  group_by:
+    key: "{{ opensearch_hostgroup }}_master_{{ opensearch_master_node | bool }}"
+  when: opensearch_hostgroup is defined
+  tags: always
+
+- name: OpenSearch Install | Download opensearch archive locally
   get_url:
-    url: "{{ os_download_url }}/{{ os_version }}/opensearch-{{ os_version }}-linux-x64.tar.gz"
+    url: "{{ opensearch_archive_url }}"
+    dest: "{{ inventory_dir }}/{{ opensearch_archive_url | basename }}"
+  run_once: true
+  delegate_to: localhost
+  when: opensearch_archive_download_and_push_from_local | bool
+
+- name: OpenSearch Install | Upload archive to nodes
+  copy:
+    src: "{{ inventory_dir }}/{{ opensearch_archive_url | basename }}"
     dest: "/tmp/opensearch.tar.gz"
-  register: download
+  when: opensearch_archive_download_and_push_from_local | bool
 
-- name: OpenSearch Install | Create opensearch user
-  user:
-    name: "{{ os_user }}"
-    state: present
-    shell: /bin/bash
-  when: download.changed
+- name: "OpenSearch Install | Download opensearch {{ opensearch_version }}"
+  get_url:
+    url: "{{ opensearch_archive_url }}"
+    dest: "/tmp/opensearch.tar.gz"
+  when: opensearch_archive_download_from_nodes | bool
 
-- name: OpenSearch Install | Create home directory
+- name: OpenSearch Install | Create release directories
   file:
-    path: "{{ os_home }}"
     state: directory
-    owner: "{{ os_user }}"
-    group: "{{ os_user }}"
-  when: download.changed
+    dest: "/usr/share/opensearch-releases/{{ opensearch_version }}"
+    owner: "{{ opensearch_user }}"
+    group: "{{ opensearch_group }}"
+    mode: "0755"
 
 - name: OpenSearch Install | Extract the tar file
-  command: chdir=/tmp/ tar -xvzf opensearch.tar.gz -C "{{ os_home }}" --strip-components=1
-  when: download.changed
+  unarchive:
+    remote_src: yes
+    src: "/tmp/opensearch.tar.gz"
+    dest: "/usr/share/opensearch-releases/{{ opensearch_version }}"
+    owner: "{{ opensearch_user }}"
+    group: "{{ opensearch_group }}"
+    extra_opts:
+    - "--strip-components=1"
+  notify: "restart opensearch"
 
-- name: OpenSearch Install | Copy Configuration File
+- name: OpenSearch Install | Create release directories
+  file:
+    state: link
+    src: "/usr/share/opensearch-releases/{{ opensearch_version }}"
+    dest: "{{ opensearch_home }}"
+  notify: "restart opensearch"
+
+- name: OpenSearch Install | Create required directories
+  file:
+    state: directory
+    path: "{{ item }}"
+    owner: "{{ opensearch_user }}"
+    group: "{{ opensearch_group }}"
+    mode: "0755"
+  loop:
+    - "{{ opensearch_conf_dir }}"
+    - "{{ opensearch_path_logs }}"
+    - "{{ opensearch_path_data }}"
+
+- name: OpenSearch Install | Generate Configuration File
   template:
     src: opensearch.yml
-    dest: "{{os_conf_dir}}/opensearch.yml"
-    owner: "{{ os_user }}"
-    group: "{{ os_user }}"
-    mode: 0644
-    backup: yes
+    dest: "{{ opensearch_conf_dir }}/opensearch.yml"
+    owner: "{{ opensearch_user }}"
+    group: "{{ opensearch_group }}"
+    mode: "0640"
+  vars:
+    bootstrap_cleanup: false
+  notify: "restart opensearch"
 
-- name: OpenSearch Install | Copy jvm.options File for Instance
+- name: OpenSearch Install | Generate jvm.options File for Instance
   template:
     src: jvm.options
-    dest: "{{os_conf_dir}}/jvm.options"
-    owner: "{{ os_user }}"
-    group: "{{ os_user }}"
+    dest: "{{ opensearch_conf_dir }}/jvm.options"
+    owner: "{{ opensearch_user }}"
+    group: "{{ opensearch_group }}"
     mode: 0644
     force: yes
+  notify: "restart opensearch"
 
-- name: OpenSearch Install | create systemd service
-  template:
-    src: opensearch.service
-    dest: "{{ systemctl_path }}/opensearch.service"
+- name: OpenSearch Install | systemctl daemon-reload
+  systemd:
+    daemon_reload: yes
+  when:
+    - _systemd_daemon_reload is defined
+    - _systemd_daemon_reload is changed
+  tags: always
+
+- name: force restart if required
+  meta: flush_handlers
+  tags: always
+

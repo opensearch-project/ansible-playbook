@@ -1,22 +1,98 @@
 ---
 
-os_nodes: |-
-        {% for item in groups['os-cluster'] -%}
-          {{ item }}{% if not loop.last %}","{% endif %}
-        {%- endfor %}
+opensearch_arch: "x64" # TODO infer from facts
+opensearch_version: "1.2.2"
+opensearch_artifacts_baseurl: "https://artifacts.opensearch.org/releases/bundle"
 
-os_master_nodes: |-
-        {% for item in groups['master'] -%}
-          {{ item }}{% if not loop.last %}","{% endif %}
-        {%- endfor %}
+opensearch_security_restapi_roles_enabled:
+  - "all_access"
+  - "security_rest_api_access"
 
-populate_inventory_to_hosts_file: true
+opensearch_http_port: 9200
+opensearch_transport_port: 9300
 
-os_home: /usr/share/opensearch
-os_conf_dir: /usr/share/opensearch/config
-os_plugin_bin_path: /usr/share/opensearch/bin/opensearch-plugin
-os_sec_plugin_conf_path: /usr/share/opensearch/plugins/opensearch-security/securityconfig
-os_sec_plugin_tools_path: /usr/share/opensearch/plugins/opensearch-security/tools
-os_api_port: 9200
+opensearch_archive_download_from_nodes: true
+opensearch_archive_download_and_push_from_local: false
 
-systemctl_path: /etc/systemd/system
+_opensearch_bootstrap_admin: "bootstrap-admin"
+
+opensearch_path_logs: "/var/log/opensearch"
+opensearch_path_data: "/var/lib/opensearch/data"
+
+opensearch_install_java: no
+
+opensearch_host_address: "{{ ansible_default_ipv4.address }}"
+opensearch_use_inventory_hostname: yes
+
+opensearch_master_node: yes
+opensearch_data_node: yes
+opensearch_ingest_node: yes
+
+opensearch_node_name: "{{ opensearch_cluster_name }}-{{ inventory_hostname }}"
+
+opensearch_listen_on_fqdn: true
+opensearch_config: {}
+opensearch_default_config:
+  node.master: "{{ opensearch_master_node }}"
+  node.data: "{{ opensearch_data_node }}"
+  node.ingest: "{{ opensearch_ingest_node }}"
+  network.host:
+    - "_local_"
+    - "_site_"
+    - "{{ opensearch_host_address }}"
+    # some systems have an /etc/hosts entry with fqdn referenced as 127.0.1.1
+    # and not a routable address nor the usual 127.0.0.1 which _local_ binds to
+    # if fqdn is resolvable this should ensure we listen on the correct address
+    - "{{ ansible_fqdn if opensearch_listen_on_fqdn | bool else '127.0.1.1' }}"
+  http.port: "{{ opensearch_http_port }}"
+  transport.port: "{{ opensearch_transport_port }}"
+
+
+_opensearch_config: "{{ opensearch_config | combine(opensearch_default_config, recursive=True) }}"
+
+# opensearch_cluster_name: ""
+# opensearch_hostgroup: ""
+# opensearch_single_node: false
+
+# should be only once when initiating cluster
+opensearch_bootstrap_cluster: false
+
+opensearch_archive_url: "{{ opensearch_artifacts_baseurl }}/opensearch/{{ opensearch_version }}/opensearch-{{ opensearch_version }}-linux-{{ opensearch_arch }}.tar.gz"
+
+opensearch_user: "opensearch"
+opensearch_group: "{{ opensearch_user }}"
+
+
+opensearch_disable_selinux: true
+opensearch_update_hostname: false
+opensearch_update_hosts_file: false
+
+opensearch_use_dummy_pki: false
+opensearch_force_csr_regen: false
+
+opensearch_home: /usr/share/opensearch
+#opensearch_conf_dir: /usr/share/opensearch/config
+opensearch_conf_dir: /etc/opensearch
+opensearch_ssl_conf_dir: "{{ opensearch_conf_dir }}/ssl"
+opensearch_plugin_bin_path: /usr/share/opensearch/bin/opensearch-plugin
+opensearch_sec_plugin_conf_path: /usr/share/opensearch/plugins/opensearch-security/securityconfig
+opensearch_sec_plugin_tools_path: /usr/share/opensearch/plugins/opensearch-security/tools
+
+opensearch_filemax: "65536"
+
+opensearch_heap_size: "{{ '2' if ansible_memtotal_mb < 2048 else ( ansible_memtotal_mb / 1024 / 2 ) | int}}g"
+
+
+## TLS configuration
+opensearch_plugins_security_ssl_transport_pemkey_filepath: "{{ opensearch_ssl_conf_dir }}/opensearch-{{ opensearch_cluster_name }}-node.key.p8"
+#opensearch_plugins_security_ssl_transport_pemkey_password:
+opensearch_plugins_security_ssl_transport_pemcert_filepath: "{{ opensearch_ssl_conf_dir }}/opensearch-{{ opensearch_cluster_name }}-node.pem"
+opensearch_plugins_security_ssl_transport_pemtrustedcas_filepath: "{{ opensearch_ssl_conf_dir }}/opensearch-{{ opensearch_cluster_name }}-CA.pem"
+
+opensearch_plugins_security_ssl_http_enabled: true
+opensearch_plugins_security_ssl_http_pemkey_filepath: "{{ opensearch_ssl_conf_dir }}/opensearch-{{ opensearch_cluster_name }}-node.key.p8"
+#opensearch_plugins_security_ssl_http_pemkey_password:
+opensearch_plugins_security_ssl_http_pemcert_filepath: "{{ opensearch_ssl_conf_dir }}/opensearch-{{ opensearch_cluster_name }}-node.pem"
+#opensearch_plugins_security_ssl_http_pemtrustedcas_filepath:
+
+opensearch_plugins_security_nodes_dn: []

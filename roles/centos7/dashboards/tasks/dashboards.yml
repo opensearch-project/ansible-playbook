@@ -1,40 +1,95 @@
 ---
-
-- name: Dashboards Install | Download opensearch dashbaord {{ os_version }}
-  get_url:
-    url: "{{ os_download_url }}-dashboards/{{ os_version }}/opensearch-dashboards-{{ os_version }}-linux-x64.tar.gz"
-    dest: "/tmp/opensearch-dashboards.tar.gz"
-  register: download
+- name: Dashboards Install | Create opensearch group
+  group:
+    name: "{{ opensearch_dashboards_group }}"
+    state: present
+    system: yes
 
 - name: Dashboards Install | Create opensearch user
   user:
-    name: "{{ os_user }}"
+    name: "{{ opensearch_dashboards_user }}"
+    group: "{{ opensearch_dashboards_group }}"
     state: present
-    shell: /bin/bash
-  when: download.changed
+    system: yes
+    home: "{{ opensearch_dashboards_home }}"
 
-- name: Dashboards Install | Create home directory
-  file:
-    path: "{{ os_dashboards_home }}"
-    state: directory
-    owner: "{{ os_user }}"
-    group: "{{ os_user }}"
-  when: download.changed
+- name: Dashboards Install | Download opensearch dashboards archive locally
+  get_url:
+    url: "{{ opensearch_dashboards_archive_url }}"
+    dest: "{{ inventory_dir }}/{{ opensearch_dashboards_archive_url | basename }}"
+  run_once: true
+  delegate_to: localhost
+  when: opensearch_dashboards_archive_download_and_push_from_local | bool
+
+- name: Dashboards Install | Upload archive to nodes
+  copy:
+    src: "{{ inventory_dir }}/{{ opensearch_dashboards_archive_url | basename }}"
+    dest: "/tmp/opensearch-dashboards.tar.gz"
+  when: opensearch_dashboards_archive_download_and_push_from_local | bool
+
+- name: "Dashboards Install | Download opensearch dashboards {{ opensearch_dashboards_version }}"
+  get_url:
+    url: "{{ opensearch_dashboards_archive_url }}"
+    dest: "/tmp/opensearch-dashboards.tar.gz"
+  when: opensearch_dashboards_archive_download_from_nodes | bool
 
 - name: Dashboards Install | Extract the tar file
-  command: chdir=/tmp/ tar -xvzf opensearch-dashboards.tar.gz -C "{{ os_dashboards_home }}" --strip-components=1
-  when: download.changed
+  unarchive:
+    remote_src: yes
+    src: "/tmp/opensearch-dashboards.tar.gz"
+    dest: "{{ opensearch_dashboards_home }}"
+    owner: "{{ opensearch_dashboards_user }}"
+    group: "{{ opensearch_dashboards_group }}"
+    extra_opts:
+    - "--strip-components=1"
 
-- name: Dashboards Install | Copy Configuration File
+- name: Dashboards Install | Create config directory
+  file:
+    state: directory
+    path: "{{ opensearch_dashboards_conf_dir }}"
+    owner: "{{ opensearch_dashboards_user }}"
+    group: "{{ opensearch_dashboards_group }}"
+    mode: "0755"
+
+- name: Pushing backend CA certificate
+  copy:
+    content: "{{ opensearch_dashboards_ssl_cacert_content }}"
+    dest: "{{ opensearch_dashboards_conf_dir }}/cacert.pem"
+    mode: "0644"
+    owner: "root"
+    group: "root"
+  notify: restart dashboards
+  when: opensearch_dashboards_ssl_cacert_content is defined
+
+- name: setting path to CA certificate pushed
+  set_fact:
+    opensearch_dashboards_ssl_cacerts: "{{ opensearch_dashboards_conf_dir }}/cacert.pem"
+  when: opensearch_dashboards_ssl_cacert_content is defined
+
+- name: Dashboards Install | Generating Configuration File
   template:
     src: opensearch_dashboards.yml
-    dest: "{{os_conf_dir}}/opensearch_dashboards.yml"
-    owner: "{{ os_user }}"
-    group: "{{ os_user }}"
-    mode: 0644
-    backup: yes
+    dest: "{{ opensearch_dashboards_conf_dir }}/opensearch_dashboards.yml"
+    owner: "{{ opensearch_dashboards_user }}"
+    group: "{{ opensearch_dashboards_group }}"
+    mode: "0640"
+  notify: restart dashboards
 
 - name: Dashboards Install | create systemd service
   template:
     src: dashboards.service
-    dest: "{{ systemctl_path }}/dashboards.service"
+    dest: "/etc/systemd/system/dashboards.service"
+  register: _systemd_daemon_reload
+  notify: restart dashboards
+
+- name: Dashboards Install | systemctl daemon-reload
+  systemd:
+    daemon_reload: yes
+  when:
+    - _systemd_daemon_reload is defined
+    - _systemd_daemon_reload is changed
+  tags: always
+
+- name: force restart if required
+  meta: flush_handlers
+  tags: always

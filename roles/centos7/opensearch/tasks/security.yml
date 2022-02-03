@@ -1,144 +1,90 @@
 ---
 
-## Here we are going to use self-signed certificates for Transport (Node-Node communication) & REST API layer
-## Using searchguard offline TLS tool to create node & root certificates
-- name: Security Plugin configuration | Create local temporary directory for certificates generation
-  local_action:
-    module: file
-    path: /tmp/opensearch-nodecerts
+# bcrypt hash handling
+# password_hash filter will *not* fail and output "*0" if passlib isn't installed
+# we have to check this and warn user to install lib or provide _bcrypt directly
+# also we have to use a static salt
+# https://passlib.readthedocs.io/en/stable/lib/passlib.hash.bcrypt.html#format-algorithm
+# salt should be 22 chars long alpha num and end with [.Oeu]
+# random_string does not support seed and
+# random_password only support seed in ansible 2.12+ hence this hack
+- assert:
+    that: ( 'testing-passlib-is-installed' | password_hash('bcrypt', (opensearch_cluster_name | hash('md5'))[0:21]+'.') ) != "*0"
+    fail_msg:
+      - python passlib must be installed on ansible controller if you want
+      - to use opensearch_admin_password or opensearch_kibanaserver_password
+      - if you can't install passlib you'll have to provide '$2b$...' bcrypt hash
+      - for opensearch_admin_password_bcrypt and opensearch_kibanaserver_password_bcrypt
+  when: ( opensearch_admin_password is defined ) or ( opensearch_kibanaserver_password is defined )
+  tags: always
+
+- assert:
+    that:
+      - opensearch_admin_password_bcrypt is not defined
+      - opensearch_kibanaserver_password_bcrypt is not defined
+    fail_msg: "either set opensearch_{admin,kibana}_password_bcrypt or _password but not both"
+  when: ( opensearch_admin_password is defined ) or ( opensearch_kibanaserver_password is defined )
+  tags: always
+
+- set_fact:
+    opensearch_admin_password_bcrypt: "{{ opensearch_admin_password | password_hash('bcrypt', (opensearch_cluster_name | hash('md5'))[0:21]+'.') }}"
+    opensearch_kibanaserver_password_bcrypt: "{{ opensearch_kibanaserver_password | password_hash('bcrypt', (opensearch_cluster_name | hash('md5'))[0:21]+'.') }}"
+  when: ( opensearch_admin_password is defined ) or ( opensearch_kibanaserver_password is defined )
+  tags: always
+
+- debug:
+    msg:
+      - "opensearch_admin_password_bcrypt= {{ opensearch_admin_password_bcrypt }}"
+      - "opensearch_kibanaserver_password_bcrypt= {{ opensearch_kibanaserver_password_bcrypt }}"
+  tags: always
+
+# actual opensearch security plugin configuration
+- name: Security Plugin configuration | Create securityconfig directory
+  file:
     state: directory
-  run_once: true
-  register: configuration
+    path: "{{ opensearch_conf_dir }}/securityconfig"
+    owner: "{{ opensearch_user }}"
+    group: "{{ opensearch_group }}"
+    mode: "0750"
 
-- name: Security Plugin configuration | Download certificates generation tool
-  local_action:
-    module: get_url
-    url: https://search.maven.org/remotecontent?filepath=com/floragunn/search-guard-tlstool/1.5/search-guard-tlstool-1.5.zip
-    dest: /tmp/opensearch-nodecerts/search-guard-tlstool.zip
-  run_once: true
-  when: configuration.changed
+- name: Security Plugin configuration | Find base securityconfig files
+  find:
+    paths: "{{ opensearch_home }}/plugins/opensearch-security/securityconfig"
+    excludes: 'internal_users.yml'
+  register: _securityconfig_files
+  tags: always
 
-- name: Security Plugin configuration | Extract the certificates generation tool
-  local_action: command chdir=/tmp/opensearch-nodecerts tar -xvf search-guard-tlstool.zip
-  run_once: true
-  when: configuration.changed
-
-- name: Security Plugin configuration | Make the executable file
-  local_action:
-    module: file
-    dest: /tmp/opensearch-nodecerts/tools/sgtlstool.sh
-    mode: a+x
-  run_once: true
-  when: configuration.changed
-
-- name: Security Plugin configuration | Prepare the certificates generation template file
-  local_action:
-    module: template
-    src: tlsconfig.yml
-    dest: /tmp/opensearch-nodecerts/config/tlsconfig.yml
-  run_once: true
-  when: configuration.changed
-
-- name: Security Plugin configuration | Generate the node & admin certificates in local
-  local_action:
-    module: command /tmp/opensearch-nodecerts/tools/sgtlstool.sh -c /tmp/opensearch-nodecerts/config/tlsconfig.yml -ca -crt -t /tmp/opensearch-nodecerts/config/
-  run_once: true
-  when: configuration.changed
-
-- name: Security Plugin configuration | Copy the node & admin certificates to opensearch nodes
+- name: Security Plugin configuration | Copy base securityconfig files
   copy:
-    src: "/tmp/opensearch-nodecerts/config/{{ item }}"
-    dest: "{{ os_conf_dir }}"
-    mode: 0600
-  with_items:
-    - root-ca.pem
-    - root-ca.key
-    - "{{ inventory_hostname }}.key"
-    - "{{ inventory_hostname }}.pem"
-    - "{{ inventory_hostname }}_http.key"
-    - "{{ inventory_hostname }}_http.pem"
-    - admin.key
-    - admin.pem
-  when: configuration.changed
+    remote_src: yes
+    src: "{{ item.path }}"
+    dest: "{{ opensearch_conf_dir }}/securityconfig/{{ item.path | basename }}"
+    owner: "{{ opensearch_user }}"
+    group: "{{ opensearch_group }}"
+    mode: "0640"
+  loop_control:
+    label: "{{ item.path }}"
+  loop: "{{ _securityconfig_files.files }}"
 
-- name: Security Plugin configuration | Copy the security configuration file 1 to cluster
-  blockinfile:
-    block: "{{ lookup('template', 'templates/security_conf.yml') }}"
-    dest: "{{ os_conf_dir }}/opensearch.yml"
-    backup: yes
-    insertafter: EOF
-    marker: "## {mark} OpenSearch Security common configuration ##"
-  when: configuration.changed
-
-- name: Security Plugin configuration | Copy the security configuration file 2 to cluster
-  blockinfile:
-    block: "{{ lookup('file', '/tmp/opensearch-nodecerts/config/{{ inventory_hostname }}_elasticsearch_config_snippet.yml') }}"
-    dest: "{{ os_conf_dir }}/opensearch.yml"
-    backup: yes
-    insertafter: EOF
-    marker: "## {mark} opensearch Security Node & Admin certificates configuration ##"
-  when: configuration.changed
-
-- name: Security Plugin configuration | Prepare the opensearch security configuration file
-  command: sed -i 's/searchguard/plugins.security/g' {{ os_conf_dir }}/opensearch.yml
-  when: configuration.changed
-
-- name: Security Plugin configuration | Set the file ownerships
-  file:
-    dest: "{{ os_home }}"
-    owner: "{{ os_user }}"
-    group: "{{ os_user }}"
-    recurse: yes
-
-- name: Security Plugin configuration | Set the folder permission
-  file:
-    dest: "{{ os_conf_dir }}"
-    owner: "{{ os_user }}"
-    group: "{{ os_user }}"
-    mode: 0700
-
-- name: Security Plugin configuration | Restart opensearch with security configuration
-  systemd:
-    name: opensearch
-    state: restarted
-    enabled: yes
-
-- name: Security Plugin configuration | Copy the opensearch security internal users template
+- name: Security Plugin configuration | Geneate the opensearch security internal users template
   template:
     src: internal_users.yml
-    dest: "{{ os_sec_plugin_conf_path }}/internal_users.yml"
-    mode: 0644
-  run_once: true
-  when: configuration.changed
-
-- name: Security Plugin configuration | Set the Admin user password
-  shell: >
-    sed -i '/hash: / s,{{ admin_password }},'$(sh {{ os_sec_plugin_tools_path }}/hash.sh -p {{ admin_password }} | tail -1)','
-    {{ os_sec_plugin_conf_path }}/internal_users.yml
-  environment:
-    JAVA_HOME: "{{ os_home }}/jdk"
-  run_once: true
-  when: configuration.changed
-
-- name: Security Plugin configuration | Set the kibanaserver user pasword
-  shell: >
-    sed -i '/hash: / s,{{ kibanaserver_password }},'$(sh {{ os_sec_plugin_tools_path }}/hash.sh -p {{ kibanaserver_password }} | tail -1)','
-    {{ os_sec_plugin_conf_path }}/internal_users.yml
-  environment:
-    JAVA_HOME: "{{ os_home }}/jdk"
-  run_once: true
-  when: configuration.changed
+    dest: "{{ opensearch_conf_dir }}/securityconfig/internal_users.yml"
+    owner: "{{ opensearch_user }}"
+    group: "{{ opensearch_group }}"
+    mode: "0640"
+  register: _internal_users
 
 - name: Security Plugin configuration | Initialize the opensearch security index in opensearch
   shell: >
-    sh {{ os_sec_plugin_tools_path }}/securityadmin.sh
-    -cacert {{ os_conf_dir }}/root-ca.pem
-    -cert {{ os_conf_dir }}/admin.pem
-    -key {{ os_conf_dir }}/admin.key
-    -f {{ os_sec_plugin_conf_path }}/internal_users.yml
+    bash "{{ opensearch_home }}/plugins/opensearch-security/tools/securityadmin.sh"
+    -cacert "{{ opensearch_plugins_security_ssl_transport_pemtrustedcas_filepath }}"
+    -cert "{{ opensearch_ssl_conf_dir }}/opensearch-{{ opensearch_cluster_name }}-admin.pem" \
+    -key "{{ opensearch_ssl_conf_dir }}/opensearch-{{ opensearch_cluster_name }}-admin.key.p8" \
+    -cd "{{ opensearch_conf_dir }}/securityconfig" \
     -nhnv -icl
-    -h {{ hostvars[inventory_hostname]['ip'] }}
-  environment:
-    JAVA_HOME: "{{ os_home }}/jdk"
+    -h "{{ hostvars[inventory_hostname]['opensearch_host_address'] }}"
   run_once: true
-  when: configuration.changed
+  when:
+    - opensearch_bootstrap_cluster | bool
+    - opensearch_master_node | bool

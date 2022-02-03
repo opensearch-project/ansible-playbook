@@ -11,15 +11,16 @@
 ## -Xms4g
 ## -Xmx4g
 ##
-
+## See https://opensearch.org/docs/opensearch/install/important-settings/
+## for more information
 ##
 ################################################################
 
 # Xms represents the initial size of total heap space
 # Xmx represents the maximum size of total heap space
 
--Xms{{ xms_value }}g
--Xmx{{ xmx_value }}g
+-Xms{{ opensearch_heap_size }}
+-Xmx{{ opensearch_heap_size }}
 
 ################################################################
 ## Expert settings

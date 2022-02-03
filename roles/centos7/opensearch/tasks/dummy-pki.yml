@@ -1,0 +1,191 @@
+- name: ssl config directory
+  file:
+    state: directory
+    path: "{{ opensearch_ssl_conf_dir }}"
+    owner: "{{ opensearch_user }}"
+    group: "{{ opensearch_group }}"
+
+- name: install python cryptography on RedHat family
+  # python package naming in CentOS is a mess
+  # python2-cryptography or python36-cryptography may be possible candidates
+  package:
+    name: "{{ _py_crypto_package }}"
+    state: present
+  when: ansible_os_family == "RedHat"
+  vars:
+    _py_crypto_package: "{{ 'python'+(ansible_python.version.major|string)+'-cryptography' if ansible_python.version.major == 2 else 'python'+(ansible_python.version.major|string)+(ansible_python.version.minor|string)+'-cryptography' }}"
+  tags: dev
+
+# create self signed CA
+- name: dummy CA private key
+  openssl_privatekey:
+    path: "{{ opensearch_ssl_conf_dir }}/opensearch-{{ opensearch_cluster_name }}-CA.key"
+    size: 4096
+    owner: root
+    group: root
+    mode: "0640"
+  when: groups[opensearch_hostgroup] | first == inventory_hostname
+
+- name: dummy CA CSR
+  openssl_csr:
+    path: "{{ opensearch_ssl_conf_dir }}/opensearch-{{ opensearch_cluster_name }}-CA.csr"
+    privatekey_path: "{{ opensearch_ssl_conf_dir }}/opensearch-{{ opensearch_cluster_name }}-CA.key"
+    # put a DNS record compatible record here, python-crypto is dumb enough
+    # to try to convert this using IDN names ...
+    common_name: "OpenSearch-cluster-{{ opensearch_cluster_name }}-CA"
+    basic_constraints:
+      - "CA:TRUE"
+    owner: root
+    group: root
+    mode: "0644"
+  when: groups[opensearch_hostgroup] | first == inventory_hostname
+
+- name: dummy CA certificate
+  openssl_certificate:
+    provider: selfsigned
+    #path: "{{ opensearch_ssl_conf_dir }}/opensearch-{{ opensearch_cluster_name }}-CA.pem"
+    path: "{{ opensearch_plugins_security_ssl_transport_pemtrustedcas_filepath }}"
+    privatekey_path: "{{ opensearch_ssl_conf_dir }}/opensearch-{{ opensearch_cluster_name }}-CA.key"
+    csr_path: "{{ opensearch_ssl_conf_dir }}/opensearch-{{ opensearch_cluster_name }}-CA.csr"
+  when: groups[opensearch_hostgroup] | first == inventory_hostname
+
+- name: fetching CA certificate
+  slurp:
+    path: "{{ opensearch_plugins_security_ssl_transport_pemtrustedcas_filepath }}"
+  register: _dummy_ca_cert
+  delegate_to: "{{ groups[opensearch_hostgroup] | first }}"
+
+- name: pushing dummy CA on nodes
+  copy:
+    content: "{{ _dummy_ca_cert.content | b64decode }}"
+    dest: "{{ opensearch_plugins_security_ssl_transport_pemtrustedcas_filepath }}"
+
+# admin certificate
+- name: generate admin private key
+  openssl_privatekey:
+    path: "{{ opensearch_ssl_conf_dir }}/opensearch-{{ opensearch_cluster_name }}-admin.key"
+    size: 4096
+    owner: "{{ opensearch_user }}"
+    group: "{{ opensearch_group }}"
+    mode: "0640"
+  register: _opensearch_admin_pkey
+  run_once: true
+  when: opensearch_master_node | bool
+  tags: dev
+
+- name: convert admin private key from PKCS1 to PKCS8
+  command: openssl pkcs8 -topk8 -inform PEM -outform PEM -in {{ _pkcs1 }} -out {{ _pkcs8 }} -nocrypt
+  vars: 
+    _pkcs1: "{{ opensearch_ssl_conf_dir }}/opensearch-{{ opensearch_cluster_name }}-admin.key"
+    _pkcs8: "{{ opensearch_ssl_conf_dir }}/opensearch-{{ opensearch_cluster_name }}-admin.key.p8"
+  run_once: true
+  when: opensearch_master_node | bool
+  args:
+    creates: "{{ _pkcs8 }}"
+  tags: dev
+
+- name: generate admin CSR
+  openssl_csr:
+    path: "{{ opensearch_ssl_conf_dir }}/opensearch-{{ opensearch_cluster_name }}-admin.csr"
+    privatekey_path: "{{ opensearch_ssl_conf_dir }}/opensearch-{{ opensearch_cluster_name }}-admin.key"
+    # same dumb python lib, must be a DNS compatible format, no space, _, ...
+    common_name: "{{ _opensearch_bootstrap_admin }}"
+    force: "{{ 'yes' if opensearch_force_csr_regen | bool else 'no' }}"
+  register: _admin_csr_status
+  run_once: true
+  when: opensearch_master_node | bool
+  tags: dev
+
+- name: sign admin CSR with dummy CA
+  openssl_certificate:
+    path: "{{ opensearch_ssl_conf_dir }}/opensearch-{{ opensearch_cluster_name }}-admin.pem"
+    csr_path: "{{ opensearch_ssl_conf_dir }}/opensearch-{{ opensearch_cluster_name }}-admin.csr"
+    ownca_path: "{{ opensearch_ssl_conf_dir }}/opensearch-{{ opensearch_cluster_name }}-CA.pem"
+    ownca_privatekey_path: "{{ opensearch_ssl_conf_dir }}/opensearch-{{ opensearch_cluster_name }}-CA.key"
+    provider: ownca
+    ownca_not_after: +1040w # 20 years should be enough
+  delegate_to: "{{ groups[opensearch_hostgroup] | first }}"
+  run_once: true
+  when: 
+    - opensearch_master_node | bool
+    - _admin_csr_status is changed
+  tags: dev
+
+# node certificate
+- name: generate node private key
+  openssl_privatekey:
+    path: "{{ opensearch_ssl_conf_dir }}/opensearch-{{ opensearch_cluster_name }}-node.key"
+    size: 4096
+    owner: "{{ opensearch_user }}"
+    group: "{{ opensearch_group }}"
+    mode: "0640"
+  register: _opensearch_node_pkey
+
+- name: convert node private key from PKCS1 to PKCS8
+  command: openssl pkcs8 -topk8 -inform PEM -outform PEM -in {{ _pkcs1 }} -out {{ _pkcs8 }} -nocrypt
+  when: _opensearch_node_pkey is changed or opensearch_force_csr_regen
+  vars: 
+    _pkcs1: "{{ opensearch_ssl_conf_dir }}/opensearch-{{ opensearch_cluster_name }}-node.key"
+    _pkcs8: "{{ opensearch_ssl_conf_dir }}/opensearch-{{ opensearch_cluster_name }}-node.key.p8"
+
+- name: ensure proper right on converted key
+  file:
+    state: file
+    owner: "{{ opensearch_user }}"
+    group: "{{ opensearch_group }}"
+    mode: "0640"
+    path: "{{ _pkcs8 }}"
+  vars:
+    _pkcs8: "{{ opensearch_ssl_conf_dir }}/opensearch-{{ opensearch_cluster_name }}-node.key.p8"
+
+- name: generate node CSR
+  openssl_csr:
+    path: "{{ opensearch_ssl_conf_dir }}/opensearch-{{ opensearch_cluster_name }}-node.csr"
+    #privatekey_path: "{{ opensearch_ssl_conf_dir }}/opensearch-{{ opensearch_cluster_name }}-node.key"
+    privatekey_path: "{{ opensearch_ssl_conf_dir }}/opensearch-{{ opensearch_cluster_name }}-node.key"
+    common_name: "{{ ansible_fqdn }}"
+    subject_alt_name:
+    - "DNS:{{ ansible_fqdn }}"
+    - "IP:{{ opensearch_host_address }}"
+    # this should work with ansible 2.10+ - not tested atm
+    #- "RID:1.2.3.4.5.5" # because hardcoded in opensearch and RID in openssl
+    force: "{{ 'yes' if opensearch_force_csr_regen | bool else 'no' }}"
+  register: _node_csr_status
+
+- name: fetching node CSR
+  slurp:
+    path: "{{ opensearch_ssl_conf_dir }}/opensearch-{{ opensearch_cluster_name }}-node.csr"
+  register: _opensearch_node_csr
+
+- name: pushing node CSR on dummy CA node
+  copy:
+    content: "{{ _opensearch_node_csr.content | b64decode }}"
+    dest: "/tmp/.opensearch-{{ opensearch_cluster_name }}-{{ ansible_fqdn }}.csr"
+  delegate_to: "{{ groups[opensearch_hostgroup] | first }}"
+  when: _node_csr_status is changed
+
+- name: sign node CSR with dummy CA
+  openssl_certificate:
+    path: "/tmp/.opensearch-{{ opensearch_cluster_name }}-{{ ansible_fqdn }}.pem"
+    csr_path: "/tmp/.opensearch-{{ opensearch_cluster_name }}-{{ ansible_fqdn }}.csr"
+    ownca_path: "{{ opensearch_ssl_conf_dir }}/opensearch-{{ opensearch_cluster_name }}-CA.pem"
+    ownca_privatekey_path: "{{ opensearch_ssl_conf_dir }}/opensearch-{{ opensearch_cluster_name }}-CA.key"
+    provider: ownca
+    ownca_not_after: +1040w # 20 years should be enough
+  delegate_to: "{{ groups[opensearch_hostgroup] | first }}"
+  when: _node_csr_status is changed
+
+- name: fetching node certificates
+  slurp:
+    path: "/tmp/.opensearch-{{ opensearch_cluster_name }}-{{ ansible_fqdn }}.pem"
+  register: _opensearch_node_cert
+  delegate_to: "{{ groups[opensearch_hostgroup] | first }}"
+  when: _node_csr_status is changed
+
+- name: pushing node certificate on nodes
+  copy:
+    content: "{{ _opensearch_node_cert.content | b64decode }}"
+    #dest: "{{ opensearch_ssl_conf_dir }}/opensearch-{{ opensearch_cluster_name }}-node.pem"
+    dest: "{{ opensearch_plugins_security_ssl_http_pemcert_filepath }}"
+  when: _node_csr_status is changed
+  notify: restart opensearch

@@ -1,19 +1,37 @@
 ---
-os_nodes: |-
-        {% for item in groups['os-cluster'] -%}
-          {{ hostvars[item]['ip'] }}{% if not loop.last %}","{% endif %}
-        {%- endfor %}
+opensearch_dashboards_update_hostname: false
+opensearch_dashboards_update_hosts_file: false
+opensearch_dashboards_disable_selinux: true
 
-populate_inventory_to_hosts_file: true
+opensearch_dashboards_user: "dashboards"
+opensearch_dashboards_group: "dashboards"
 
-os_dashboards_home: /usr/share/opensearch-dashboards
-os_conf_dir: /usr/share/opensearch-dashboards/config
-os_plugin_bin_path: /usr/share/opensearch-dashboards/bin/opensearch-dashboards-plugin
 
-os_api_port: 9200
-os_nodes_dashboards: |-
-        {% for item in groups['os-cluster'] -%}
-          https://{{ hostvars[item]['ip'] }}:{{ os_api_port }}{% if not loop.last %}","{% endif %}
-        {%- endfor %}
+opensearch_dashboards_arch: "x64" # TODO infer from facts
+opensearch_dashboards_version: "1.2.0"
+opensearch_dashboards_artifacts_baseurl: "https://artifacts.opensearch.org/releases/bundle"
+opensearch_dashboards_archive_url: "{{ opensearch_dashboards_artifacts_baseurl }}/opensearch-dashboards/{{ opensearch_dashboards_version }}/opensearch-dashboards-{{ opensearch_dashboards_version }}-linux-{{ opensearch_dashboards_arch }}.tar.gz"
 
-systemctl_path: /etc/systemd/system
+
+opensearch_dashboards_archive_download_from_nodes: true
+opensearch_dashboards_archive_download_and_push_from_local: false
+
+opensearch_dashboards_home: /usr/share/opensearch-dashboards
+opensearch_dashboards_conf_dir: /etc/opensearch-dashboards
+
+# opensearch_dashboards_backend_hosts: # list of backend urls - scheme+host+port
+# opensearch_dashboards_backend_hostgroup: # ansible group, scheme and port infered from _backend_{port,ssl}
+opensearch_dashboards_backend_port: "9200"
+opensearch_dashboards_backend_ssl: true
+opensearch_dashboards_port: "5601"
+opensearch_dashboards_host: "0.0.0.0"
+
+# none, certificate or full
+opensearch_dashboards_ssl_verify: "full"
+
+#opensearch_dashboards_ssl_cacerts:
+#opensearch_dashboards_ssl_cacert_content:
+opensearch_dashboards_backend_username: "kibanaserver"
+#opensearch_dashboards_backend_password:
+
+opensearch_dashboards_security_cookie_secure: "{{ 'true' if opensearch_dashboards_backend_ssl | bool else 'false' }}"

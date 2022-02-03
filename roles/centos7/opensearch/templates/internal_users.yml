@@ -1,21 +1,16 @@
 ---
-# This is the internal user database
-# The hash value is a bcrypt hash and can be generated with plugin/tools/hash.sh
-
 _meta:
   type: "internalusers"
   config_version: 2
 
-# Define your internal users here
-
 admin:
-  hash: "{{ admin_password }}"
+  hash: "{{ opensearch_admin_password_bcrypt }}"
   reserved: true
   backend_roles:
   - "admin"
   description: "admin user"
 
 kibanaserver:
-  hash: "{{ kibanaserver_password }}"
+  hash: "{{ opensearch_kibanaserver_password_bcrypt }}"
   reserved: true
   description: "kibanaserver user"

@@ -1,31 +1,40 @@
 ---
 
+- assert:
+    that:
+      - opensearch_dashboards_backend_password is defined
+  tags: always
+
+- assert:
+    that:
+      - opensearch_dashboards_backend_hosts is defined or opensearch_dashboards_backend_hostgroup is defined
+  tags: always
+
 - hostname:
     name: "{{ inventory_hostname }}"
+  when:
+    - opensearch_update_hostname is defined
+    - opensearch_update_hostname | bool
 
-- name: Disable the selinux
+- name: Disable SElinux
   selinux:
     state: disabled
+  when:
+    - ansible_os_family == "Redhat"
+    - opensearch_dashboards_disable_selinux is defined
+    - opensearch_dashboards_disable_selinux | bool
 
 - name: Populate the nodes to /etc/hosts
   import_tasks: etchosts.yml
-
-- name: Tune the system settings
-  import_tasks: tune.yml
+  when:
+    - opensearch_dashboards_update_hosts_file is defined
+    - opensearch_dashboards_update_hosts_file | bool
 
 - name: include dashboards installation
   include: dashboards.yml
 
-- name: Make sure opensearch dashboards is started
+- name: Enable and start Opensearch dashboards
   service:
     name: dashboards
     state: started
     enabled: yes
-
-- name: Get all the installed dashboards plugins
-  command: "sudo -u {{ os_user }} {{ os_plugin_bin_path }} list"
-  register: list_plugins
-
-- name: Show all the installed dashboards plugins
-  debug:
-    msg: "{{ list_plugins.stdout }}"
