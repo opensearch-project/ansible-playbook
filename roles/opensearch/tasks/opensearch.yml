@@ -85,6 +85,21 @@
     force: yes
   notify: "restart opensearch"
 
+- name: OpenSearch Install | Symlink default log4j configuration
+  file:
+    state: link
+    src: "{{ opensearch_home }}/config/log4j2.properties"
+    dest: "{{ opensearch_conf_dir }}/log4j2.properties"
+    owner: "{{ opensearch_user }}"
+    group: "{{ opensearch_group }}"
+  notify: "restart opensearch"
+
+- name: OpenSearch Install | create systemd service
+  template:
+    src: opensearch.service
+    dest: "/etc/systemd/system/opensearch.service"
+  register: _systemd_daemon_reload
+
 - name: OpenSearch Install | systemctl daemon-reload
   systemd:
     daemon_reload: yes
@@ -92,6 +107,12 @@
     - _systemd_daemon_reload is defined
     - _systemd_daemon_reload is changed
   tags: always
+
+- name: Make sure opensearch is started
+  service:
+    name: opensearch
+    state: started
+    enabled: yes
 
 - name: force restart if required
   meta: flush_handlers

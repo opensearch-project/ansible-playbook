@@ -91,13 +91,6 @@
 
 - name: include security plugin for opensearch
   include: security.yml
-
-- name: Make sure opensearch is started
-  service:
-    name: opensearch
-    state: started
-    enabled: yes
-
 - name: Regenerate Configuration File after bootstrap
   template:
     src: opensearch.yml
