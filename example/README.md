@@ -39,4 +39,25 @@ parameters:
 - adapt kibana server backend password to match the one in group vars
   (`opensearch_dashboards_backend_password`)
 - adapt `opensearch_cluster_name` to match the cluster name in the group vars
-- 
+ 
+## Deployment
+
+For **initial** deployment run (when you need `initial_master_nodes` set in
+opensearch.yml configuration file) issue the following:
+
+```
+ansible-playbook playbook.yml --diff -e opensearch_bootstrap_cluster=true
+```
+
+For subsequent runs when quorum is acquired there is no need for the
+`opensearch_bootstrap_cluster` flag to be enabled
+
+Runs are then:
+
+```
+ansible-playbook playbook.yml --diff
+```
+
+The role should be idempotent, please report issue if it's not the case.
+Meaning if there is no change on the cluster configuration or nodes on two
+sequential runs the later should output *zero* Ansible *changed* tasks.
