@@ -1,0 +1,104 @@
+---
+# OpenSearch variables
+opensearch_hostgroup: "os-cluster"
+opensearch_cluster_name: "os-vagrant"
+opensearch_use_dummy_pki: yes
+opensearch_admin_password: "password"
+opensearch_kibanaserver_password: "kibana"
+
+opensearch_install_java: true
+opensearch_bootstrap_cluster: true
+
+# specific for vagrant/VBox with Ubuntu
+opensearch_host_address: "{{ ansible_enp0s8.ipv4.address }}"
+# needed for vagrant
+opensearch_update_hosts_file: true
+opensearch_dashboards_update_hosts_file: true
+
+# Dashboard variables (should vault encrypt key in production)
+opensearch_dashboards_hostgroup: "os-dashboards"
+opensearch_dashboards_ssl: true
+opensearch_dashboards_ssl_cert: |
+  -----BEGIN CERTIFICATE-----
+  MIIFDTCCAvWgAwIBAgIUNnnZNmv8hVFc8YUrxeD+qC6rMNAwDQYJKoZIhvcNAQEL
+  BQAwFjEUMBIGA1UEAwwLZGFzaGJvYXJkczEwHhcNMjIwMzAyMTQwNDA5WhcNMzIw
+  MjI4MTQwNDA5WjAWMRQwEgYDVQQDDAtkYXNoYm9hcmRzMTCCAiIwDQYJKoZIhvcN
+  AQEBBQADggIPADCCAgoCggIBAMkxo7zSb1deG4+KwWv13TdupIWS9bHzlICpi2xi
+  1NE+Pgte39qBIbuKP87D/0uyn2vIVlr/19FIopK1mSTCNZADEz2byCNxho/SzF2c
+  REN90Ttj/hYF9Wfv6Bh8IiYB0MtlzD0+OVfyaF9ufFJ7X5XPwtq6rif2KW0u0Mvn
+  jizQ9qU1c2YoF4LxFHkwmBA6Zeb06qV7V9U3+tGsIkag68V+wBlsFms/zPaQlqae
+  Ox6X+KQOx4CRdPRCwioolzzJt+Rl5sZ//KHZkjK1/+If2fJjZaWHtxYWE0fWKxRk
+  PIHUtmp8US2eGeVI1ICO1nkPquJIohsJz0/9XIGY946gGxjT5dQlnqMhebe2l6lL
+  finfTfk7OpWvHYZIyJg7JgDjmI2+4by+qR8N4mo5hOTPERY5EXlAV2uC14QDvBOv
+  mXR3UwBu8ep0vVCbYdWFzMTDREeocaR1bvBIClVdVAQES7SCDK7hig7P7QpJzbRG
+  fXFnxWObKcS+ODCJjbOo9ovawv/+ByDoN2AWw6dK/AxIYviH7jqUPEUQEmaiyux6
+  UILoHp6wg+VrsvlTqMI3oOANXq63mRlqoEL4kZthOpX6BWM3naNgyt5q0Lsqfh6x
+  +Jf7o0ioxS1JMrhyjRxwTaGpO4PWOVPMZU7FPl51pZSZXZc6xeg0g60h4VheYdfz
+  lDPZAgMBAAGjUzBRMB0GA1UdDgQWBBRpeh5BwYXyCM8reABk0SbnhtszmjAfBgNV
+  HSMEGDAWgBRpeh5BwYXyCM8reABk0SbnhtszmjAPBgNVHRMBAf8EBTADAQH/MA0G
+  CSqGSIb3DQEBCwUAA4ICAQA+kNH7fdME01D7fOuSjRHJrRiC+NQP+yNvvWb4uZzr
+  HlUmC9xk4cXMyuESKXlAWD6NE6VsgmIvZzL+xxeyyQY4leZBFKWR28LEQigw4QuR
+  gLOLd3tQb9ZjQNifKgSp46Mm+/vnoBX6qyQzEJG3G6vxxW6oMoXvc+7FHbt6rDgn
+  W62mAZzWOGPqT1Pw+z9Ooy40LzLfPwhQWPDYLSe1qEYBqN4pt1uNoK2xfPcl9Gvh
+  DVcQXhLLhnRcUqAiGCYOtoqIHJEXS/oxnXyaj/ZUp4Y2gPqjjZjNl9FsVD/rWl0G
+  rK4uwlf4zVDSGciMTFJex3jMTZA0O+JtLGpVS2/NWvyvsJ3zN9K7Nth3VlPT5Mh8
+  OqnKdDT7R0fW5/Emz1XwAJrvRO8jwKnA7mi+1AK75Hb+sv0d58QMoVg2+JqtECaN
+  LIGWXoEFFUP+5nXZ8V3mhb2wiWC0RObHk4Bz05U4ppBwTP+nfse1KNpUO3Msv9IA
+  eY5TVbcinkf/uWOvWrOM/NB7f+BrytUP7+9F4CVWveeLu/srX3QDSkmKigHjA/TN
+  faLOPogh/pMoEg/KwtMyKOiwYEjqKoe8yzOa/bzstR2OGaOknMIjsUz1Ks5k1ylu
+  H6jtuTnMDLJ4xziWUi9sccMFuZQ8Gn3PmDf8Htuyq3Xx2ddlkG0DbfJ4Ns+t8gpM
+  9A==
+  -----END CERTIFICATE-----
+opensearch_dashboards_ssl_key: |
+  -----BEGIN PRIVATE KEY-----
+  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
+  JVlDlq0m60ZFa6WEpWsJYenTEp8uog==
+  -----END PRIVATE KEY-----

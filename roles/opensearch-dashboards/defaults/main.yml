@@ -3,6 +3,7 @@
 opensearch_dashboards_update_hostname: false
 opensearch_dashboards_update_hosts_file: false
 opensearch_dashboards_disable_selinux: true
+opensearch_dashboards_hostgroup: "os-dashboards"
 
 # unix user/group to run dashboards with
 opensearch_dashboards_user: "dashboards"
@@ -21,7 +22,16 @@ opensearch_dashboards_archive_download_and_push_from_local: false
 
 # where to unpack archive and configuration
 opensearch_dashboards_home: /usr/share/opensearch-dashboards
+opensearch_dashboards_release: /usr/share/opensearch-dashboards-release
 opensearch_dashboards_conf_dir: /etc/opensearch-dashboards
+opensearch_dashboards_ssl_dir: /etc/opensearch-dashboards/ssl
+
+opensearch_dashboards_ssl: false
+opensearch_dashboards_ssl_cert_file: "{{ opensearch_dashboards_ssl_dir }}/dashboard-cert.pem"
+opensearch_dashboards_ssl_key_file: "{{ opensearch_dashboards_ssl_dir }}/dashboard-key.pem"
+opensearch_dashboards_ssl_cert: ""
+opensearch_dashboards_ssl_key: ""
+
 
 # required list of backend urls - scheme+host+port
 # opensearch_dashboards_backend_hosts:

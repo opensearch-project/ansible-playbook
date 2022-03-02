@@ -20,10 +20,18 @@
     - "{{ ansible_os_family }}.yml"
     - "{{ ansible_system }}.yml"
 
-- name: install Java runtime
-  package:
-    name: "{{ opensearch_jre_package }}"
-    state: present
+- name: install with recovery
+  block:
+    - name: install Java runtime
+      package:
+        name: "{{ opensearch_jre_package }}"
+        state: present
+  rescue:
+    - name: install Java runtime (apt update)
+      package:
+        name: "{{ opensearch_jre_package }}"
+        state: present
+        update_cache: yes
   when:
     - opensearch_install_java is defined
     - opensearch_install_java | bool

@@ -3,11 +3,24 @@
   blockinfile:
     dest: /etc/hosts
     block: |-
-      {% for item in groups['dashboards'] %}
-      {{ hostvars[item]['ip'] }} {{ item }}.{{ domain_name }} {{ item }}
+      {% for item in groups[opensearch_dashboards_hostgroup] %}
+      {{ hostvars[item]['opensearch_host_address'] }} {{ hostvars[item]['ansible_fqdn'] }} {{ hostvars[item]['ansible_hostname'] }}
       {% endfor %}
     state: present
     create: yes
     backup: yes
-    marker: "# Ansible inventory hosts {mark}"
-  when: populate_inventory_to_hosts_file
+    marker: "# Ansible inventory dashboard hosts {mark}"
+  when: opensearch_dashboards_update_hosts_file
+
+- name: Hosts | populate inventory into hosts file
+  blockinfile:
+    dest: /etc/hosts
+    block: |-
+      {% for item in groups[opensearch_hostgroup] %}
+      {{ hostvars[item]['opensearch_host_address'] }} {{ hostvars[item]['ansible_fqdn'] }} {{ hostvars[item]['ansible_hostname'] }}
+      {% endfor %}
+    state: present
+    create: yes
+    backup: yes
+    marker: "# Ansible inventory cluster hosts {mark}"
+  when: opensearch_dashboards_update_hosts_file

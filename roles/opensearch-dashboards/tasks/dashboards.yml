@@ -5,13 +5,26 @@
     state: present
     system: yes
 
-- name: Dashboards Install | Create opensearch user
+- name: Dashboards Install | Create dashboards user
   user:
     name: "{{ opensearch_dashboards_user }}"
     group: "{{ opensearch_dashboards_group }}"
     state: present
     system: yes
     home: "{{ opensearch_dashboards_home }}"
+    create_home: false
+
+- name: Dashboard Install | Create required directories
+  file:
+    state: directory
+    path: "{{ item }}"
+    owner: "{{ opensearch_dashboards_user }}"
+    group: "{{ opensearch_dashboards_group }}"
+    mode: "0755"
+  loop:
+    - "{{ opensearch_dashboards_conf_dir }}"
+    - "{{ opensearch_dashboards_release }}"
+    - "{{ opensearch_dashboards_release }}/{{ opensearch_dashboards_version }}"
 
 - name: Dashboards Install | Download opensearch dashboards archive locally
   get_url:
@@ -24,32 +37,32 @@
 - name: Dashboards Install | Upload archive to nodes
   copy:
     src: "{{ inventory_dir }}/{{ opensearch_dashboards_archive_url | basename }}"
-    dest: "/tmp/opensearch-dashboards.tar.gz"
+    dest: "{{ opensearch_dashboards_release }}/opensearch-dashboards-{{ opensearch_dashboards_version }}.tar.gz"
   when: opensearch_dashboards_archive_download_and_push_from_local | bool
 
 - name: "Dashboards Install | Download opensearch dashboards {{ opensearch_dashboards_version }}"
   get_url:
     url: "{{ opensearch_dashboards_archive_url }}"
-    dest: "/tmp/opensearch-dashboards.tar.gz"
+    dest: "{{ opensearch_dashboards_release }}/opensearch-dashboards-{{ opensearch_dashboards_version }}.tar.gz"
   when: opensearch_dashboards_archive_download_from_nodes | bool
 
 - name: Dashboards Install | Extract the tar file
   unarchive:
     remote_src: yes
-    src: "/tmp/opensearch-dashboards.tar.gz"
-    dest: "{{ opensearch_dashboards_home }}"
+    src: "{{ opensearch_dashboards_release }}/opensearch-dashboards-{{ opensearch_dashboards_version }}.tar.gz"
+    dest: "{{ opensearch_dashboards_release }}/{{ opensearch_dashboards_version }}"
     owner: "{{ opensearch_dashboards_user }}"
     group: "{{ opensearch_dashboards_group }}"
     extra_opts:
     - "--strip-components=1"
+    creates: "{{ opensearch_dashboards_release }}/{{ opensearch_dashboards_version }}/LICENSE.txt"
 
-- name: Dashboards Install | Create config directory
+- name: Dashboards Install | Create release directories
   file:
-    state: directory
-    path: "{{ opensearch_dashboards_conf_dir }}"
-    owner: "{{ opensearch_dashboards_user }}"
-    group: "{{ opensearch_dashboards_group }}"
-    mode: "0755"
+    state: link
+    src: "{{ opensearch_dashboards_release }}/{{ opensearch_dashboards_version }}"
+    dest: "{{ opensearch_dashboards_home }}"
+  notify: "restart dashboards"
 
 - name: Pushing backend CA certificate
   copy:
@@ -65,6 +78,31 @@
   set_fact:
     opensearch_dashboards_ssl_cacerts: "{{ opensearch_dashboards_conf_dir }}/cacert.pem"
   when: opensearch_dashboards_ssl_cacert_content is defined
+
+- name: deploy dashboards ssl
+  block:
+    - name: create ssl directory
+      ansible.builtin.file:
+        path: "{{ opensearch_dashboards_ssl_dir }}"
+        state: directory
+        owner: "{{ opensearch_dashboards_user }}"
+        group: "{{ opensearch_dashboards_group }}"
+
+    - name: Deploy certs
+      ansible.builtin.copy:
+        content: "{{ item.content }}"
+        dest: "{{ item.file }}"
+        owner: "{{ opensearch_dashboards_user }}"
+        group: "{{ opensearch_dashboards_group }}"
+        mode: "{{ item.mode }}"
+      loop:
+        - file: "{{ opensearch_dashboards_ssl_cert_file }}"
+          content: "{{ opensearch_dashboards_ssl_cert }}"
+          mode: "0640"
+        - file: "{{ opensearch_dashboards_ssl_key_file }}"
+          content: "{{ opensearch_dashboards_ssl_key }}"
+          mode: "0600"
+  when: opensearch_dashboards_ssl
 
 - name: Dashboards Install | Generating Configuration File
   template:

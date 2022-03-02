@@ -4,53 +4,8 @@
   group_by:
     key: "{{ opensearch_hostgroup }}_master_{{ opensearch_master_node | bool }}"
   when: opensearch_hostgroup is defined
+  changed_when: false
   tags: always
-
-- name: OpenSearch Install | Download opensearch archive locally
-  get_url:
-    url: "{{ opensearch_archive_url }}"
-    dest: "{{ inventory_dir }}/{{ opensearch_archive_url | basename }}"
-  run_once: true
-  delegate_to: localhost
-  when: opensearch_archive_download_and_push_from_local | bool
-
-- name: OpenSearch Install | Upload archive to nodes
-  copy:
-    src: "{{ inventory_dir }}/{{ opensearch_archive_url | basename }}"
-    dest: "/tmp/opensearch.tar.gz"
-  when: opensearch_archive_download_and_push_from_local | bool
-
-- name: "OpenSearch Install | Download opensearch {{ opensearch_version }}"
-  get_url:
-    url: "{{ opensearch_archive_url }}"
-    dest: "/tmp/opensearch.tar.gz"
-  when: opensearch_archive_download_from_nodes | bool
-
-- name: OpenSearch Install | Create release directories
-  file:
-    state: directory
-    dest: "/usr/share/opensearch-releases/{{ opensearch_version }}"
-    owner: "{{ opensearch_user }}"
-    group: "{{ opensearch_group }}"
-    mode: "0755"
-
-- name: OpenSearch Install | Extract the tar file
-  unarchive:
-    remote_src: yes
-    src: "/tmp/opensearch.tar.gz"
-    dest: "/usr/share/opensearch-releases/{{ opensearch_version }}"
-    owner: "{{ opensearch_user }}"
-    group: "{{ opensearch_group }}"
-    extra_opts:
-    - "--strip-components=1"
-  notify: "restart opensearch"
-
-- name: OpenSearch Install | Create release directories
-  file:
-    state: link
-    src: "/usr/share/opensearch-releases/{{ opensearch_version }}"
-    dest: "{{ opensearch_home }}"
-  notify: "restart opensearch"
 
 - name: OpenSearch Install | Create required directories
   file:
@@ -63,6 +18,48 @@
     - "{{ opensearch_conf_dir }}"
     - "{{ opensearch_path_logs }}"
     - "{{ opensearch_path_data }}"
+    - "{{ opensearch_path_release }}"
+    - "{{ opensearch_path_release }}/{{ opensearch_version }}"
+
+- name: OpenSearch Install | Download opensearch archive locally
+  get_url:
+    url: "{{ opensearch_archive_url }}"
+    dest: "{{ inventory_dir }}/{{ opensearch_archive_url | basename }}"
+  run_once: true
+  delegate_to: localhost
+  when: opensearch_archive_download_and_push_from_local | bool
+
+- name: OpenSearch Install | Upload archive to nodes
+  copy:
+    src: "{{ inventory_dir }}/{{ opensearch_archive_url | basename }}"
+    dest: "{{ opensearch_path_release }}/opensearch-{{ opensearch_version }}.tar.gz"
+  when: opensearch_archive_download_and_push_from_local | bool
+
+- name: "OpenSearch Install | Download opensearch {{ opensearch_version }}"
+  get_url:
+    url: "{{ opensearch_archive_url }}"
+    dest: "{{ opensearch_path_release }}/opensearch-{{ opensearch_version }}.tar.gz"
+  when: opensearch_archive_download_from_nodes | bool
+
+- name: OpenSearch Install | Extract the tar file
+  unarchive:
+    remote_src: yes
+    src: "{{ opensearch_path_release }}/opensearch-{{ opensearch_version }}.tar.gz"
+    dest: "{{ opensearch_path_release }}/{{ opensearch_version }}"
+    owner: "{{ opensearch_user }}"
+    group: "{{ opensearch_group }}"
+    extra_opts:
+    - "--strip-components=1"
+    creates: "{{ opensearch_path_release }}/{{ opensearch_version }}/LICENSE.txt"
+  notify: "restart opensearch"
+
+- name: OpenSearch Install | Create release directories
+  file:
+    state: link
+    src: "{{ opensearch_path_release }}/{{ opensearch_version }}"
+    dest: "{{ opensearch_home }}"
+  notify: "restart opensearch"
+
 
 - name: OpenSearch Install | Generate Configuration File
   template:

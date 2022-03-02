@@ -1,6 +1,15 @@
 server.port: "{{ opensearch_dashboards_port }}"
 server.host: "{{ opensearch_dashboards_host }}"
 
+{% if opensearch_dashboards_ssl %}
+server.ssl.enabled: true
+server.ssl.certificate: {{ opensearch_dashboards_ssl_cert_file }}
+server.ssl.key: {{ opensearch_dashboards_ssl_key_file }}
+{% else %}
+# Use this setting if you are running dashboards without https
+opensearch_security.cookie.secure: "{{ opensearch_dashboards_security_cookie_secure }}"
+{% endif %}
+
 {% if opensearch_dashboards_backend_hostgroup is defined %}
 {% set _backend_hosts = groups[opensearch_dashboards_backend_hostgroup] | map('regex_replace', '$', ":"+ (opensearch_dashboards_backend_port | string))  %}
 {% if opensearch_dashboards_backend_ssl is defined and
@@ -30,5 +39,3 @@ opensearch.ssl.certificateAuthorities: "{{ opensearch_dashboards_ssl_cacerts }}"
 
 # https://opensearch.org/docs/latest/security-plugin/access-control/users-roles/
 opensearch_security.readonly_mode.roles: ["kibana_read_only"]
-# Use this setting if you are running dashboards without https
-opensearch_security.cookie.secure: "{{ opensearch_dashboards_security_cookie_secure }}"

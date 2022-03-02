@@ -2,7 +2,7 @@
 
 # where and what Opensearch release to fetch
 opensearch_arch: "x64" # TODO infer from facts
-opensearch_version: "1.2.2"
+opensearch_version: "1.2.4"
 opensearch_artifacts_baseurl: "https://artifacts.opensearch.org/releases/bundle"
 opensearch_archive_url: "{{ opensearch_artifacts_baseurl }}/opensearch/{{ opensearch_version }}/opensearch-{{ opensearch_version }}-linux-{{ opensearch_arch }}.tar.gz"
 
@@ -27,6 +27,7 @@ opensearch_transport_port: 9300
 
 opensearch_path_logs: "/var/log/opensearch"
 opensearch_path_data: "/var/lib/opensearch/data"
+opensearch_path_release: "/usr/share/opensearch-releases"
 
 # use the shipped java JRE (OpenJDK)
 # currently only tested on Debian 11 an CentOS 7
@@ -59,6 +60,7 @@ opensearch_default_config:
     # and not a routable address nor the usual 127.0.0.1 which _local_ binds to
     # if fqdn is resolvable this should ensure we listen on the correct address
     - "{{ ansible_fqdn if opensearch_listen_on_fqdn | bool else '127.0.1.1' }}"
+  network.publish_host: "{{ opensearch_host_address }}"
   http.port: "{{ opensearch_http_port }}"
   transport.port: "{{ opensearch_transport_port }}"
 
