@@ -4,6 +4,7 @@ Tested on:
 
 - Debian 11
 - CentOS7
+- Ubuntu 20.04
 
 Only tested in cluster mode 3+ nodes - no single node extensive testing atm.
 Also only deployed using self generated dummy PKI (not with externally provided

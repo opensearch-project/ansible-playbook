@@ -1,7 +1,8 @@
 # the opensearch cluster name as displayed in API
 opensearch_cluster_name: "os-test-cluster"
 # the ansible hostgroup to install cluster to - see inventory file
-opensearch_hostgroup: "oscluster"
+opensearch_hostgroup: "os-cluster"
+opensearch_dashboards_hostgroup: "os-dashboards"
 
 # install the system (Debian or CentOS) java JRE
 opensearch_install_java: yes
