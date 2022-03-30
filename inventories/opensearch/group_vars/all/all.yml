@@ -21,7 +21,7 @@ domain_name: example.com
 xms_value: 2
 xmx_value: 2
 
-# Cluster type whether its single node or multi-node
+# Cluster type whether its single-node or multi-node
 cluster_type: multi-node
 
 # opensearch user info
