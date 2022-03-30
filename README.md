@@ -45,7 +45,7 @@ In `inventories/opensearch/hosts` file, you can configure the node details.
 
 In AWS EC2,
 ```
-  os1 ansible_host=<Elastic/Public IP> address ansible_user=root ip=<Private IP address>
+os1 ansible_host=<Elastic/Public IP> address ansible_user=root ip=<Private IP address>
 ```
 
 #### Multi-node Installation
@@ -56,7 +56,7 @@ By default, this playbook will install five nodes opensearch cluster with respec
 os1 ansible_host=10.0.1.1 ip=10.0.1.1 roles=data,master
 os2 ansible_host=10.0.1.2 ip=10.0.1.2 roles=data,master
 os3 ansible_host=10.0.1.3 ip=10.0.1.3 roles=data,master
-0s4 ansible_host=10.0.1.4 ip=10.0.1.4 roles=data,ingest
+os4 ansible_host=10.0.1.4 ip=10.0.1.4 roles=data,ingest
 os5 ansible_host=10.0.1.5 ip=10.0.1.5 roles=data,ingest
 ```
 
