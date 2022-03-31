@@ -26,13 +26,16 @@
   when: download.changed
 
 - name: OpenSearch Install | Copy Configuration File
-  template:
-    src: "opensearch-{{ cluster_type }}.yml"
-    dest: "{{os_conf_dir}}/opensearch.yml"
+  blockinfile:
+    block: "{{ lookup('template', 'templates/opensearch-{{ cluster_type }}.yml') }}"
+    dest: "{{ os_conf_dir }}/opensearch.yml"
+    backup: yes
+    state: present
+    create: yes
+    marker: "## {mark} opensearch main configuration ##"
     owner: "{{ os_user }}"
     group: "{{ os_user }}"
     mode: 0600
-    backup: yes
 
 - name: OpenSearch Install | Copy jvm.options File for Instance
   template:
