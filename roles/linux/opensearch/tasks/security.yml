@@ -9,6 +9,7 @@
     state: directory
   run_once: true
   register: configuration
+  become: false
 
 - name: Security Plugin configuration | Download certificates generation tool
   local_action:
@@ -17,11 +18,13 @@
     dest: /tmp/opensearch-nodecerts/search-guard-tlstool.tar.gz
   run_once: true
   when: configuration.changed
+  become: false
 
 - name: Security Plugin configuration | Extract the certificates generation tool
   local_action: command chdir=/tmp/opensearch-nodecerts tar -xvf search-guard-tlstool.tar.gz
   run_once: true
   when: configuration.changed
+  become: false
 
 - name: Security Plugin configuration | Make the executable file
   local_action:
