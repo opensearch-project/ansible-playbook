@@ -160,3 +160,4 @@
     state: absent
   run_once: true
   when: configuration.changed
+  become: false
