@@ -13,3 +13,7 @@ Fork this repository on GitHub, and clone locally with `git clone`.
 ### Submitting Changes
 
 See [CONTRIBUTING](CONTRIBUTING.md).
+
+### Backport
+
+- [Link to backport documentation](https://github.com/opensearch-project/opensearch-plugins/blob/main/BACKPORT.md)
