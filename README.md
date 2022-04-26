@@ -44,7 +44,20 @@ If you use ec2-user as linux user, then copy hosts_ec2-user to hosts
 cp inventories/opensearch/hosts_ec2-user inventories/opensearch/hosts
 ```
 
+If you use ubuntu as linux user, then copy hosts_ubuntu to hosts
+
+```
+cp inventories/opensearch/hosts_ubuntu inventories/opensearch/hosts
+```
+
+If you use centos as linux user, then copy hosts_centos to hosts
+
+```
+cp inventories/opensearch/hosts_centos inventories/opensearch/hosts
+```
+
 If you use root user as linux user, then copy hosts_root_user to hosts
+
 ```
 cp inventories/opensearch/hosts_root_user inventories/opensearch/hosts
 ```
