@@ -9,6 +9,7 @@
     state: directory
   run_once: true
   register: configuration
+  become: false
 
 - name: Security Plugin configuration | Download certificates generation tool
   local_action:
@@ -17,11 +18,13 @@
     dest: /tmp/opensearch-nodecerts/search-guard-tlstool.tar.gz
   run_once: true
   when: configuration.changed
+  become: false
 
 - name: Security Plugin configuration | Extract the certificates generation tool
   local_action: command chdir=/tmp/opensearch-nodecerts tar -xvf search-guard-tlstool.tar.gz
   run_once: true
   when: configuration.changed
+  become: false
 
 - name: Security Plugin configuration | Make the executable file
   local_action:
@@ -30,6 +33,7 @@
     mode: a+x
   run_once: true
   when: configuration.changed
+  become: false
 
 - name: Security Plugin configuration | Prepare the certificates generation template file
   local_action:
@@ -38,12 +42,14 @@
     dest: /tmp/opensearch-nodecerts/config/tlsconfig.yml
   run_once: true
   when: configuration.changed
+  become: false
 
 - name: Security Plugin configuration | Generate the node & admin certificates in local
   local_action:
     module: command /tmp/opensearch-nodecerts/tools/sgtlstool.sh -c /tmp/opensearch-nodecerts/config/tlsconfig.yml -ca -crt -t /tmp/opensearch-nodecerts/config/
   run_once: true
   when: configuration.changed
+  become: false
 
 - name: Security Plugin configuration | Copy the node & admin certificates to opensearch nodes
   copy:
@@ -154,3 +160,4 @@
     state: absent
   run_once: true
   when: configuration.changed
+  become: false
