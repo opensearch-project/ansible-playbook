@@ -39,36 +39,13 @@ For example if we need to increase the java memory heap size for opensearch,
     xms_value: 8
     xmx_value: 8
 
-If you use ec2-user as linux user, then copy hosts_ec2-user to hosts
-```
-cp inventories/opensearch/hosts_ec2-user inventories/opensearch/hosts
-```
-
-If you use ubuntu as linux user, then copy hosts_ubuntu to hosts
-
-```
-cp inventories/opensearch/hosts_ubuntu inventories/opensearch/hosts
-```
-
-If you use centos as linux user, then copy hosts_centos to hosts
-
-```
-cp inventories/opensearch/hosts_centos inventories/opensearch/hosts
-```
-
-If you use root user as linux user, then copy hosts_root_user to hosts
-
-```
-cp inventories/opensearch/hosts_root_user inventories/opensearch/hosts
-```
-
 In `inventories/opensearch/hosts` file, you can configure the node details.
 `ansible_host` is used for ansible to connect the nodes to run this playbook.
 `ip` is used in OpenSearch and Dashboards configuration.
 
 In AWS EC2,
 ```
-os1 ansible_host=<Elastic/Public IP> address ansible_user=ec2-user ip=<Private IP address>
+os1 ansible_host=<Elastic/Public IP> address ansible_user=root ip=<Private IP address>
 ```
 
 #### Multi-node Installation
@@ -105,12 +82,17 @@ cluster_type: single-node
 ### Install
 
 
-    # Deploy with ansible playbook - run the playbook as ec2-user
-    ansible-playbook -i inventories/opensearch/hosts opensearch.yml --extra-vars "admin_password=Test@123 kibanaserver_password=Test@6789" --become
+    # Deploy with ansible playbook - run the playbook as root
+    ansible-playbook -i inventories/opensearch/hosts opensearch.yml --extra-vars "admin_password=Test@123 kibanaserver_password=Test@6789"
 
 You should set the reserved users(`admin` and `kibanaserver`) password using `admin_password` and `kibanaserver_password` variables.
 
 It will install and configure the opensearch. Once the deployment completed, you can access the opensearch Dashboards with user `admin` and password which you provided for variable `admin_password`.
+
+    # Deploy with ansible playbook - run the playbook as non-root user which have sudo privileges,
+    ansible-playbook -i inventories/opensearch/hosts opensearch.yml --extra-vars "admin_password=Test@123 kibanaserver_password=Test@6789" --become
+
+**Note**: Change the user details in `ansible_user` parameter in `inventories/opensearch/hosts`  inventory file.
 
 ## Contributing
 
