@@ -34,6 +34,20 @@
     mode: 0644
     backup: yes
 
+- name: Dashboards Install | Set the file ownerships
+  file:
+    dest: "{{ os_dashboards_home }}"
+    owner: "{{ os_dashboards_user }}"
+    group: "{{ os_dashboards_user }}"
+    recurse: yes
+
+- name: Dashboards Install | Set the folder permission
+  file:
+    dest: "{{ os_conf_dir }}"
+    owner: "{{ os_dashboards_user }}"
+    group: "{{ os_dashboards_user }}"
+    mode: 0700
+
 - name: Dashboards Install | create systemd service
   template:
     src: dashboards.service
