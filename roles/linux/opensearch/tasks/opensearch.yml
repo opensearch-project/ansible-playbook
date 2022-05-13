@@ -10,7 +10,9 @@
   user:
     name: "{{ os_user }}"
     state: present
-    shell: /bin/bash
+    shell: /bin/false
+    create_home: true
+    home: "{{ os_home }}"
   when: download.changed
 
 - name: OpenSearch Install | Create home directory
