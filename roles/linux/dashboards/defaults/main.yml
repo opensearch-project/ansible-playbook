@@ -17,3 +17,6 @@ os_nodes_dashboards: |-
         {%- endfor %}
 
 systemctl_path: /etc/systemd/system
+
+# Auth type: 'internal' or 'oidc' (OpenID). Default: internal
+auth_type: internal
