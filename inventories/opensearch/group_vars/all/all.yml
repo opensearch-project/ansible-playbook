@@ -96,3 +96,24 @@ custom_security_plugin_configs:
 # /tmp/opensearch-nodecerts directory was missing on the server from which the
 # playbook was launched and new certificates were generated)
 iac_enable: false
+
+# Whether to apply the settings to the OpenSearch ISM instance.
+# The policy files are located in the files/ism/policy directory
+# and must have the extension ".json".
+# The policies specify the index templates to which they should be applied.
+# In this way, you can configure, for example, index rotation
+apply_custom_ism: no
+
+# The index patterns for which the policy is applied are configured in the
+# policy file in the section "policy.ism_template.index_patterns"
+custom_ism:
+  # Settings for Policies
+  policy:
+    # Apply all policies from the {{ dir }} directory or only the specified ones
+    apply_all: yes
+    # Directory with policy files
+    dir: "files/ism/policy"
+    # Policy files to be applied to the OpenSearch instance if "apply_all: no"
+    files:
+      - files/ism/policy/hot7_warm30_delete.json
+      - files/ism/policy/delete_after_30d.json

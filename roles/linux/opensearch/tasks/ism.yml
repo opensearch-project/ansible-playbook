@@ -1,0 +1,122 @@
+---
+# Tasks are written based on
+# https://github.com/pashtet04/ansible-opensearch/blob/main/tasks/init.yml
+
+# register: 2 variables are used "ism_all" and "ism_custom", due to the fact
+# that if "custom_ism.policy.apply_all: yes) is set, then when using one variable
+# (for example, "register: ism") in the tasks "Get policies for all files" and
+# "Get policies for selected files", then the task "Get policies for selected files"
+# (which follows the second one) overwrites the state of the variable with values
+# of the form:
+# {'results': [
+# {'changed': False, 'skipped': True, 'skip_reason': 'Conditional result was False', 'item': 'files/ism/policy/test1.json', 'ansible_loop_var': 'item'},
+# {'changed': False, 'skipped': True, 'skip_reason': 'Conditional result was False', 'item': 'files/ism/policy/test2.json', 'ansible_loop_var': 'item'}
+#             ], 'msg': 'All items completed', 'changed': False}
+# and the processing logic breaks down.
+
+- name: ISM Plugin configuration | Get policies for all files
+  run_once: yes
+  become: no
+  uri:
+    url: "https://{{ inventory_hostname }}:9200/_plugins/_ism/policies/{{ item | basename | splitext | first }}"
+    url_username: "admin"
+    url_password: "{{ admin_password }}"
+    method: GET
+    force_basic_auth: yes
+    validate_certs: false
+    status_code: [ 200, 404 ]
+  retries: 3
+  delay: 5
+  until: ism_all.status == 200 or ism_all.status == 404
+  with_fileglob:
+    - "{{ custom_ism.policy.dir }}/*.json"
+  register: ism_all
+  when: custom_ism.policy.apply_all
+
+- name: ISM Plugin configuration | DEBUG. Show ism_all
+  debug:
+    msg: "{{ ism_all }}"
+  run_once: yes
+  become: no
+  when: custom_ism.policy.apply_all
+
+- name: ISM Plugin configuration | Set ism_all to ism
+  set_fact:
+    ism: "{{ ism_all }}"
+  run_once: yes
+  become: no
+  when: custom_ism.policy.apply_all
+
+- name: ISM Plugin configuration | Get policies for selected files
+  run_once: yes
+  become: no
+  uri:
+    url: "https://{{ inventory_hostname }}:9200/_plugins/_ism/policies/{{ item | basename | splitext | first }}"
+    url_username: "admin"
+    url_password: "{{ admin_password }}"
+    method: GET
+    force_basic_auth: yes
+    validate_certs: false
+    status_code: [ 200, 404 ]
+  retries: 3
+  delay: 5
+  until: ism_custom.status == 200 or ism_custom.status == 404
+  with_items: "{{ custom_ism.policy.files }}"
+  register: ism_custom
+  when: not custom_ism.policy.apply_all
+
+- name: ISM Plugin configuration | DEBUG. Show ism_custom
+  debug:
+    msg: "{{ ism_custom }}"
+  run_once: yes
+  become: no
+  when: not custom_ism.policy.apply_all
+
+- name: ISM Plugin configuration | Set ism_custom to ism
+  set_fact:
+    ism: "{{ ism_custom }}"
+  run_once: yes
+  become: no
+  when: not custom_ism.policy.apply_all
+
+- name: ISM Plugin configuration | Create policies
+  run_once: yes
+  become: no
+  uri:
+    url: "{{ item.url }}"
+    url_username: "admin"
+    url_password: "{{ admin_password }}"
+    method: PUT
+    force_basic_auth: yes
+    body_format: json
+    body: "{{ lookup('file',item.item) }}"
+    validate_certs: no
+    status_code: [ 201 ]
+  retries: 3
+  delay: 5
+  until: _result.status == 201
+  with_items: "{{ ism.results }}"
+  when: '404 == item.status'
+  register: _result
+
+
+- name: ISM Plugin configuration | Update policies
+  run_once: yes
+  become: no
+  uri:
+    url: "{{ item.url }}?if_seq_no={{ item.json._seq_no }}&if_primary_term={{ item.json._primary_term }}"
+    url_username: "admin"
+    url_password: "{{ admin_password }}"
+    method: PUT
+    force_basic_auth: yes
+    body_format: json
+    body: "{{ lookup('file',item.item) }}"
+    validate_certs: no
+    status_code: [ 200 ]
+  retries: 3
+  delay: 5
+  until: _result.status == 200
+  with_items: "{{ ism.results }}"
+  when: '200 == item.status'
+  register: _result
+

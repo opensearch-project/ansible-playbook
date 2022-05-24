@@ -25,6 +25,7 @@ This ansible playbook supports the following,
 - Configure the Internal Users Database with limited users and user-defined passwords
 - Configuration of authentication and authorization via OpenID
 - Overriding default settings with your own
+- Creation/Updating ISM Policies
 - Install and configure the Apache2.0 opensource OpenSearch Dashboards
 
 ### Prerequisite
@@ -135,6 +136,14 @@ from the list, then all certificates on all cluster servers will be updated
 Also, if the option is enabled, the settings files will be updated with each execution (previously, the settings were 
 updated only if the /tmp/opensearch-nodecerts directory was missing on the server from which the playbook was launched 
 and new certificates were generated)
+
+### ISM Policies
+
+OpenSearch uses the ISM (Index State Management) plugin to manage the lifecycle of indexes. With the help of policies, 
+you can, for example, change the number of replicas for indexes, when certain conditions occur, or delete them.
+
+If you want to manage policies using the opensearch role, set the `apply_custom_ism: yes` parameter, and create json 
+files with policies in the `files/ism/policy` directory. Examples of policies can be found in the same directory.
 
 ## Contributing
 
