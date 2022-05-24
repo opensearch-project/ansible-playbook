@@ -117,3 +117,27 @@ custom_ism:
     files:
       - files/ism/policy/hot7_warm30_delete.json
       - files/ism/policy/delete_after_30d.json
+
+# Automatic creation of an "index pattern" in the specified tenants.
+# "index pattern" objects are stored in OpenSearch Dashboards (Kubana) and they
+# are managed via the Dashboards API, so you need to work with these objects at
+# the very end, after turning and launching.
+# When creating, the "overwrite=true" parameter is used so that the existing index
+# pattern is not duplicated.
+#
+# Index templates are created only when "iac_enable: yes"
+
+create_index_patterns: []
+#create_index_patterns:
+#  - tenant: "SECURITY"
+#    title: "kube-apiserver-audit-*"
+#    timeFieldName: "@timestamp"
+#  - tenant: "SECURITY"
+#    title: "syslog-*"
+#    timeFieldName: "@timestamp"
+#  - tenant: "WEB"
+#    title: "mywebapp-*"
+#    timeFieldName: "@timestamp"
+#  - tenant: "WEB"
+#    title: "ingress-nginx-*"
+#    timeFieldName: "@timestamp"

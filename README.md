@@ -26,6 +26,7 @@ This ansible playbook supports the following,
 - Configuration of authentication and authorization via OpenID
 - Overriding default settings with your own
 - Creation/Updating ISM Policies
+- Creating Index patterns
 - Install and configure the Apache2.0 opensource OpenSearch Dashboards
 
 ### Prerequisite
@@ -144,6 +145,18 @@ you can, for example, change the number of replicas for indexes, when certain co
 
 If you want to manage policies using the opensearch role, set the `apply_custom_ism: yes` parameter, and create json 
 files with policies in the `files/ism/policy` directory. Examples of policies can be found in the same directory.
+
+### Index patterns
+
+To search for indexes in Dashboards, you need to create an index pattern (`Stack Management` -> `Index patterns`). 
+If there are a lot of indexes and they are in different tenants, then manually creating them can be quite time-consuming, 
+especially if one pattern needs to be created in several tenants at the same time.
+
+If you want to create a large number of index patterns using the `dashboards` role, then set the `iac_enable: yes` 
+parameter and fill in the `create_index_patterns` list.
+
+When performing the role, index patterns will be created. When creating, the "overwrite=true" parameter is used, 
+which prevents the creation of identical objects when running multiple times.
 
 ## Contributing
 

@@ -1,0 +1,35 @@
+---
+
+- name: Index Pattern | Create index patterns with overwrite
+  run_once: yes
+  become: no
+  uri:
+    url: "http://{{ inventory_hostname }}:5601/api/saved_objects/index-pattern/{{ item.title }}?overwrite=true"
+    url_username: "admin"
+    url_password: "{{ admin_password }}"
+    method: POST
+    force_basic_auth: yes
+    body_format: json
+    body: "{\"attributes\":{\"title\":\"{{ item.title }}\",\"timeFieldName\":\"{{ item.timeFieldName }}\"}}"
+    validate_certs: no
+    status_code: [ 200 ]
+    headers:
+      Content-Type: "application/json"
+      securitytenant: "{{ item.tenant }}"
+      osd-xsrf: "true"
+  retries: 3
+  delay: 5
+  until: idxp.status == 200 or idxp.status == 404
+  with_items: "{{ create_index_patterns }}"
+  register: idxp
+  when: iac_enable
+
+
+- name: Index Pattern | DEBUG. Show idxp
+  debug:
+    msg: "{{ idxp }}"
+  run_once: yes
+  become: no
+  when: iac_enable
+
+
