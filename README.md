@@ -14,7 +14,7 @@
 A community repository for Ansible Playbook of OpenSearch Project.
 
 ## Version and Branching
-As of now, this ansible-playbook repository maintains 3 branches:
+As of now, this ansible-playbook repository maintains 2 branches:
 * _main_ (Version is 2.x.x for both `os_version` and `os_dashboards_version` in `inventories/opensearch/group_vars/all/all.yml`)
 * _1.x_ (Version is 1.x.x for both `os_version` and `os_dashboards_version` in `inventories/opensearch/group_vars/all/all.yml`)
 <br>
