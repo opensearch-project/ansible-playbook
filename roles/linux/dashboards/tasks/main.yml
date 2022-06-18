@@ -18,6 +18,9 @@
 - name: include dashboards installation
   include: dashboards.yml
 
+- name: Create index patterns
+  include: index-patterns.yml
+
 - name: Make sure opensearch dashboards is started
   service:
     name: dashboards
