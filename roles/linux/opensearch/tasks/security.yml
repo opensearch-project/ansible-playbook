@@ -2,7 +2,6 @@
 
 ## Here we are going to use self-signed certificates for Transport (Node-Node communication) & REST API layer
 ## Using searchguard offline TLS tool to create node & root certificates
-# >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 - name: Security Plugin configuration | Force remove local temporary directory for certificates generation
   local_action:
     module: file
@@ -20,7 +19,6 @@
   run_once: true
   register: configuration
   become: false
-# <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
 - name: Security Plugin configuration | Download certificates generation tool
   local_action:
@@ -62,7 +60,6 @@
   when: configuration.changed
   become: false
 
-# >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 - name: Security Plugin configuration | IaC enabled - Check certificate
   block:
     - name: Security Plugin configuration | Check cert exists
@@ -92,7 +89,7 @@
       with_items: "{{ cert_stat_result.results }}"
       when: item.stat.exists == False
 
-    - name: Security Plugin configuration | debug 1 - force_update_cert
+    - name: Security Plugin configuration | Show the force_update_cert setting
       debug:
         msg: "force_update_cert: {{ force_update_cert }}"
 
@@ -100,7 +97,7 @@
       set_fact:
         force_update_cert_nodes_count: "{{ hostvars | dict2items | selectattr('value.force_update_cert', 'defined') | rejectattr('value.force_update_cert', 'equalto', false) | map(attribute='value.force_update_cert') | list | length }}"
 
-    - name: Security Plugin configuration | debug 2 - force_update_cert_nodes_count
+    - name: Security Plugin configuration | Show the force_update_cert_nodes_count setting
       debug:
         msg: "force_update_cert_nodes_count: {{ force_update_cert_nodes_count }}"
 
@@ -114,7 +111,6 @@
   set_fact:
     force_update_cert_nodes_count: 0
   when: not iac_enable
-# <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
 - name: Security Plugin configuration | Copy the node & admin certificates to opensearch nodes if at least one certificate is not found on at least one server
   copy:
@@ -243,16 +239,19 @@
         name: custom_users
       run_once: true
 
+    # In the internal_users file.yml each user is described by the block:
+    # username:
+    #   hash: "{{ username_password }}"In addition to the user description blocks, there is a _meta block
+    #   ...
+    # In addition to the user description blocks, there is a _meta block
+    # In this task, all usernames are selected from the file (excluding the _meta block), for which hashed
+    # passwords will be written next
     - name: Security Plugin configuration | Filter service keys from the list of users
       set_fact:
         custom_users_filtered: '{{ custom_users|dict2items|rejectattr("key", "equalto", "_meta")|list|items2dict }}'
 
-#    - name: Security Plugin configuration | debug
-#      debug:
-#        msg: "{{ item }} password: {{ lookup('vars', item + '_password') }}"
-#      with_items: "{{ custom_users_filtered }}"
-#      run_once: true
-
+    # Hashed passwords are written for all users found in the previous task. Passwords are searched in variables
+    # set by the user when starting the role (admin_password, kibanaserver_password, etc.).
     - name: Security Plugin configuration | Set passwords for all users from custom config
       shell: >
         sed -i '/hash: / s,{{ lookup('vars', item + '_password') }},'$(bash {{ os_sec_plugin_tools_path }}/hash.sh -p {{ lookup('vars', item + '_password') }} | tail -1)','
