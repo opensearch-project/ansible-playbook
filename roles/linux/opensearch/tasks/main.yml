@@ -61,3 +61,7 @@
   debug:
     msg: "{{ os_roles.stdout }}"
   run_once: true
+
+- name: Apply custom ism settings
+  include: ism.yml
+  when: apply_custom_ism
