@@ -20,3 +20,6 @@ os_sec_plugin_tools_path: /usr/share/opensearch/plugins/opensearch-security/tool
 os_api_port: 9200
 
 systemctl_path: /etc/systemd/system
+
+# Auth type: 'internal' or 'oidc' (OpenID). Default: internal
+auth_type: internal

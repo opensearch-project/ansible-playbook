@@ -6,12 +6,14 @@
     dest: "/tmp/opensearch-dashboards.tar.gz"
   register: download
 
-- name: Dashboards Install | Create opensearch user
+- name: Dashboards Install | Create opensearch dashboard user
   user:
     name: "{{ os_dashboards_user }}"
     state: present
-    shell: /bin/bash
-  when: download.changed
+    shell: /bin/false
+    create_home: true
+    home: "{{ os_dashboards_home }}"
+  when: download.changed or iac_enable
 
 - name: Dashboards Install | Create home directory
   file:
@@ -19,11 +21,11 @@
     state: directory
     owner: "{{ os_dashboards_user }}"
     group: "{{ os_dashboards_user }}"
-  when: download.changed
+  when: download.changed or iac_enable
 
 - name: Dashboards Install | Extract the tar file
   command: chdir=/tmp/ tar -xvzf opensearch-dashboards.tar.gz -C "{{ os_dashboards_home }}" --strip-components=1
-  when: download.changed
+  when: download.changed or iac_enable
 
 - name: Dashboards Install | Copy Configuration File
   template:
