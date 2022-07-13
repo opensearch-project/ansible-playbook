@@ -2,13 +2,13 @@ ca:
    root:
       dn: CN=root.ca.{{ domain_name }},OU=CA,O={{ domain_name }}\, Inc.,DC={{ domain_name }}
       keysize: 2048
-      validityDays: 730
+      validityDays: {{ cert_valid_days }}
       pkPassword: none
       file: root-ca.pem
 
 ### Default values and global settings
 defaults:
-      validityDays: 730
+      validityDays: {{ cert_valid_days }}
       pkPassword: none
       # Set this to true in order to generate config and certificates for
       # the HTTP interface of nodes
