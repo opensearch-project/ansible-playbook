@@ -30,3 +30,65 @@ cluster_type: multi-node
 os_user: opensearch
 
 os_dashboards_user: opensearch-dashboards
+
+# Number of days that certificates are valid
+cert_valid_days: 730
+
+# Auth type: 'internal' or 'oidc' (OpenID). Default: internal
+auth_type: internal
+
+# OIDC settings
+oidc:
+  description: "Authenticate via IdP"
+  # OpenID server URI
+  connect_url: https://oidc.example.com/auth/realms/<realm name>/.well-known/openid-configuration
+  # The JWT token field that contains the user name
+  subject_key: preferred_username
+  # the JWT token field that contains a list of user roles
+  roles_key: roles
+  # Scopes
+  scopes: "openid profile email"
+  # The address of Dashboards to redirect the user to after successful authentication
+  dashboards_url: http(s)://<dashboards address>.example.com
+  # IdP client ID
+  client_id: opensearch
+  # IdP client secret
+  client_secret: "00000000-0000-0000-0000-000000000000"
+
+# Overwrite demo configurations with your own
+copy_custom_security_configs: false
+
+# To override demo configurations, you can use your own configuration files.
+# Place them in the "files" directory. Specify the path to the files
+custom_security_plugin_configs:
+  - files/tenants.yml
+  - files/roles.yml
+  - files/roles_mapping.yml
+  - files/internal_users.yml
+
+# By default, if the /tmp/opensearch-nodecerts directory with certificates
+# exists on the server from which the playbook is launched, it is assumed
+# that the configuration has not changed and some settings are not copied
+# to the target servers.
+#
+# Conversely, if the /tmp/opensearch-nodecerts directory does not exist on
+# the server from which the playbook is launched, then new certificates and
+# settings are generated and they are copied to the target servers.
+#
+# If you use this repository not only for the initial deployment of the
+# cluster, but also for its automatic configuration via CI/CD, then new
+# certificates will be generated every time the pipeline is launched,
+# overwriting existing ones, which is not always necessary if the cluster is
+# already in production.
+#
+# When iac_enable enabling, and all the cluster servers have all the necessary
+# certificates, they will not be copied again. If at least on one server (for
+# example, when adding a new server to the cluster) if there is not at least one
+# certificate from the list, then all certificates on all cluster servers will
+# be updated
+#
+# Also, if the option is enabled, the settings files will be updated with each
+# execution (previously, the settings were updated only if the
+# /tmp/opensearch-nodecerts directory was missing on the server from which the
+# playbook was launched and new certificates were generated)
+iac_enable: false

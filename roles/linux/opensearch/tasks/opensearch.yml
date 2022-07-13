@@ -10,8 +10,10 @@
   user:
     name: "{{ os_user }}"
     state: present
-    shell: /bin/bash
-  when: download.changed
+    shell: /bin/false
+    create_home: true
+    home: "{{ os_home }}"
+  when: download.changed or iac_enable
 
 - name: OpenSearch Install | Create home directory
   file:
@@ -19,11 +21,11 @@
     state: directory
     owner: "{{ os_user }}"
     group: "{{ os_user }}"
-  when: download.changed
+  when: download.changed or iac_enable
 
 - name: OpenSearch Install | Extract the tar file
   command: chdir=/tmp/ tar -xvzf opensearch.tar.gz -C "{{ os_home }}" --strip-components=1
-  when: download.changed
+  when: download.changed or iac_enable
 
 - name: OpenSearch Install | Copy Configuration File
   blockinfile:
