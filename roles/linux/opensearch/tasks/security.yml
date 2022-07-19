@@ -146,6 +146,15 @@
     marker: "## {mark} opensearch Security Node & Admin certificates configuration ##"
   when: configuration.changed or iac_enable
 
+- name: Security Plugin configuration | Create security plugin configuration folder
+  file:
+    dest: "{{ os_sec_plugin_conf_path }}"
+    owner: "{{ os_user }}"
+    group: "{{ os_user }}"
+    mode: 0700
+    state: directory
+  when: configuration.changed or iac_enable
+
 - name: Security Plugin configuration | Copy the security configuration file 3 to cluster
   template:
     src: security_plugin_conf.yml
