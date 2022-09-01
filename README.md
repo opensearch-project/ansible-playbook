@@ -33,6 +33,8 @@ This ansible playbook supports the following,
 - Configure TLS/SSL for OpenSearch transport layer(Nodes to Nodes communication) and REST API layer
 - Generate self-signed certificates to configure TLS/SSL for opensearch
 - Configure the Internal Users Database with limited users and user-defined passwords
+- Configuration of authentication and authorization via OpenID
+- Overriding default settings with your own
 - Install and configure the Apache2.0 opensource OpenSearch Dashboards
 
 ### Prerequisite
@@ -97,12 +99,52 @@ cluster_type: single-node
 
 You should set the reserved users(`admin` and `kibanaserver`) password using `admin_password` and `kibanaserver_password` variables.
 
+If you define your own internal users (in addition to the reserved `admin` and `kibanaserver`) in custom configuration 
+files, then passwords to them should be set via variables on the principle of `<username>_password`
+
 It will install and configure the opensearch. Once the deployment completed, you can access the opensearch Dashboards with user `admin` and password which you provided for variable `admin_password`.
 
     # Deploy with ansible playbook - run the playbook as non-root user which have sudo privileges,
     ansible-playbook -i inventories/opensearch/hosts opensearch.yml --extra-vars "admin_password=Test@123 kibanaserver_password=Test@6789" --become
 
 **Note**: Change the user details in `ansible_user` parameter in `inventories/opensearch/hosts`  inventory file.
+
+### OpenID authentification
+To enable authentication via OpenID, you need to change the `auth_type` variable in the inventory file 
+`inventories/opensearch/group_vars/all/all.yml` by setting the value `oidc` and prescribe the necessary settings 
+in the `oidc:` block.
+
+### Custom configuration files
+
+To override the default settings files, you need to put your settings in the `files` directory. The files should be 
+named exactly the same as the original ones (internal_users.yml, roles.yml, tenants.yml, etc.)
+
+Especially note the file `files/internal_users.yml`. If it exists and the `copy_custom_security_configs: true` setting is enabled, 
+then only in this case the task of setting passwords for internal users from variables is started. If the file `internal_users.yml` 
+is not located in the `files` directory, but, for example, in one of its subdirectories, then playbook will not work correctly
+
+### IaC (Infrastructure-as-Code)
+
+If you want to use the role not only for the initial deployment of the cluster, but also for further management of it, 
+then set the `iac_enable` parameter to `true`. 
+
+By default, if the /tmp/opensearch-nodecerts directory with certificates exists on the server from which the playbook 
+is launched, it is assumed that the configuration has not changed and some settings are not copied to the target servers.
+
+Conversely, if the /tmp/opensearch-nodecerts directory does not exist on the server from which the playbook is launched, 
+then new certificates and settings are generated and they are copied to the target servers.
+
+If you use this repository not only for the initial deployment of the cluster, but also for its automatic configuration 
+via CI/CD, then new certificates will be generated every time the pipeline is launched, overwriting existing ones, which 
+is not always necessary if the cluster is already in production.
+
+When iac_enable enabling, and all the cluster servers have all the necessary certificates, they will not be copied again. 
+If at least on one server (for example, when adding a new server to the cluster) if there is not at least one certificate 
+from the list, then all certificates on all cluster servers will be updated
+
+Also, if the option is enabled, the settings files will be updated with each execution (previously, the settings were 
+updated only if the /tmp/opensearch-nodecerts directory was missing on the server from which the playbook was launched 
+and new certificates were generated)
 
 ## Contributing
 
