@@ -264,7 +264,7 @@
 
   when: custom_users_result.stat.exists
 
-- name: Security Plugin configuration | Initialize the opensearch security index in opensearch
+- name: Security Plugin configuration | Initialize the opensearch security index in opensearch with custom configs
   shell: >
     bash {{ os_sec_plugin_tools_path }}/securityadmin.sh
     -cacert {{ os_conf_dir }}/root-ca.pem
@@ -278,7 +278,7 @@
   run_once: true
   when: configuration.changed and copy_custom_security_configs
 
-- name: Security Plugin configuration | Initialize the opensearch security index in opensearch
+- name: Security Plugin configuration | Initialize the opensearch security index in opensearch with default configs
   shell: >
     bash {{ os_sec_plugin_tools_path }}/securityadmin.sh
     -cacert {{ os_conf_dir }}/root-ca.pem
