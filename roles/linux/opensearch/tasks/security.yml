@@ -238,6 +238,7 @@
   register: custom_users_result
   delegate_to: localhost
   run_once: true
+  become: false
 
 - name: Security Plugin configuration | Check for a custom configuration for internal users and hash passwords for them
   block:
