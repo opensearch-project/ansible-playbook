@@ -274,7 +274,7 @@
 
   when: custom_users_result.stat.exists
 
-- name: Security Plugin configuration | Initialize the opensearch security index in opensearch
+- name: Security Plugin configuration | Initialize the opensearch security index in opensearch with custom configs
   shell: >
     bash {{ os_sec_plugin_tools_path }}/securityadmin.sh
     -cacert {{ os_conf_dir }}/root-ca.pem
@@ -286,7 +286,21 @@
   environment:
     JAVA_HOME: "{{ os_home }}/jdk"
   run_once: true
-  when: configuration.changed or copy_custom_security_configs
+  when: configuration.changed and copy_custom_security_configs
+
+- name: Security Plugin configuration | Initialize the opensearch security index in opensearch with default configs
+  shell: >
+    bash {{ os_sec_plugin_tools_path }}/securityadmin.sh
+    -cacert {{ os_conf_dir }}/root-ca.pem
+    -cert {{ os_conf_dir }}/admin.pem
+    -key {{ os_conf_dir }}/admin.key
+    -f {{ os_sec_plugin_conf_path }}/internal_users.yml
+    -nhnv -icl
+    -h {{ hostvars[inventory_hostname]['ip'] }}
+  environment:
+    JAVA_HOME: "{{ os_home }}/jdk"
+  run_once: true
+  when: configuration.changed and not copy_custom_security_configs
 
 - name: Security Plugin configuration | Cleanup local temporary directory
   local_action:
