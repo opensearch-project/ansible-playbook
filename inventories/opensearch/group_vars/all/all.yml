@@ -1,5 +1,11 @@
 ## Common opensearch configuration parameters ##
 
+kibanaserver_password: kibana123
+
+logstash_password: logstash123
+
+admin_password: admin123
+
 os_cluster_name: development-cluster
 
 # opensearch download
@@ -7,56 +13,57 @@ os_download_url: https://artifacts.opensearch.org/releases/bundle/opensearch
 
 # opensearch version
 # 2.x Latest Version
-os_version: "2.3.0"
+os_version: '2.3.0'
 
 # opensearch dashboards version
 # 2.x Latest Version
-os_dashboards_version: "2.3.0"
+os_dashboards_version: '2.3.0'
 
 # Configure hostnames for opensearch nodes
 # It is required to configure SSL
 # Example es1.example.com, es2.example.com
-domain_name: example.com
+domain_name: local
 
 # Java memory heap values(GB) for opensearch
 # You can change it based on server specs
-xms_value: 2
-xmx_value: 2
+xms_value: 1
+xmx_value: 1
 
 # Cluster type whether its single-node or multi-node
 cluster_type: multi-node
 
-# opensearch user info
+# opensearch user
 os_user: opensearch
-
+# opensearch-dashboards user
 os_dashboards_user: opensearch-dashboards
 
 # Number of days that certificates are valid
 cert_valid_days: 730
 
-# Auth type: 'internal' or 'oidc' (OpenID). Default: internal
+# Auth type: 'internal', 'ldap' or 'oidc' (OpenID). Default: internal
 auth_type: internal
 
-# OIDC settings
-oidc:
-  description: "Authenticate via IdP"
-  # OpenID server URI
-  connect_url: https://oidc.example.com/auth/realms/<realm name>/.well-known/openid-configuration
-  # The JWT token field that contains the user name
-  subject_key: preferred_username
-  # the JWT token field that contains a list of user roles
-  roles_key: roles
-  # Scopes
-  scopes: "openid profile email"
-  # The address of Dashboards to redirect the user to after successful authentication
-  dashboards_url: http(s)://<dashboards address>.example.com
-  # IdP client ID
-  client_id: opensearch
-  # IdP client secret
-  client_secret: "00000000-0000-0000-0000-000000000000"
+ldap:
+  # enable ldaps
+  enable_ssl: false
+  enable_start_tls: false
+  hosts:
+    - localhost:389
+  bind_dn: null
+  bind_dn_pass: null
+  userbase: 'ou=people,dc=example,dc=com'
+  # Filter to search for users (currently in the whole subtree beneath userbase)
+  # {0} is substituted with the username
+  usersearch: '(sAMAccountName={0})'
+  # Use this attribute from the user as username (if not set then DN is used)
+  username_attribute: null # or uid
+  # roles_from_myldap
+  rolebase: 'ou=groups,dc=example,dc=com'
+  rolesearch: '(member={0})'
+  userroleattribute: null
 
 # Overwrite demo configurations with your own
-copy_custom_security_configs: false
+copy_custom_security_configs: true
 
 # To override demo configurations, you can use your own configuration files.
 # Place them in the "files" directory. Specify the path to the files
@@ -65,6 +72,46 @@ custom_security_plugin_configs:
   - files/roles.yml
   - files/roles_mapping.yml
   - files/internal_users.yml
+
+# Logstash values
+# version repository
+logstash_version: '8.x'
+
+logstash_package: logstash
+
+logstash_listen_port_beats: 5044
+
+logstash_elasticsearch_hosts:
+  - https://10.0.1.11:9200
+  - https://10.0.1.12:9200
+  - https://10.0.1.13:9200
+
+logstash_local_syslog_path: /var/log/syslog
+logstash_monitor_local_syslog: true
+
+logstash_dir: /usr/share/logstash
+
+logstash_ssl_dir: /etc/pki/logstash
+logstash_ssl_certificate_file: ''
+logstash_ssl_key_file: ''
+logstash_install_plugins:
+  - logstash-input-beats
+  - logstash-filter-multiline
+  - logstash-output-opensearch
+
+logstash_setup_default_config: true
+
+# TODO сделать управление фильтрами
+logstash_input_output:
+  - 01-beats-input.conf
+  - 35-opensearch-output.conf
+
+logstash_filter:
+  - 10-syslog.conf
+  - 11-nginx.conf
+  - 12-apache.conf
+  - 14-solr.conf
+  - 15-drupal.conf
 
 # By default, if the /tmp/opensearch-nodecerts directory with certificates
 # exists on the server from which the playbook is launched, it is assumed
@@ -91,4 +138,4 @@ custom_security_plugin_configs:
 # execution (previously, the settings were updated only if the
 # /tmp/opensearch-nodecerts directory was missing on the server from which the
 # playbook was launched and new certificates were generated)
-iac_enable: false
+iac_enable: true

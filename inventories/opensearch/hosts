@@ -1,10 +1,10 @@
-os1 ansible_host=10.0.1.1  ansible_user=root ip=10.0.1.1 roles=data,master
-os2 ansible_host=10.0.1.2  ansible_user=root ip=10.0.1.2 roles=data,master
-os3 ansible_host=10.0.1.3  ansible_user=root ip=10.0.1.3 roles=data,master
-os4 ansible_host=10.0.1.4  ansible_user=root ip=10.0.1.4 roles=data,ingest
-os5 ansible_host=10.0.1.5  ansible_user=root ip=10.0.1.5 roles=data,ingest
+os1 ansible_host=127.0.0.1 ansible_port=2222 ip=10.0.1.11 roles=data,master ansible_user=vagrant ansible_ssh_private_key_file=/home/yagami/project/docker/ansible-lint/open-search/debian/.vagrant/machines/os1/virtualbox/private_key
+os2 ansible_host=127.0.0.1 ansible_port=2200 ip=10.0.1.12 roles=data,master ansible_user=vagrant ansible_ssh_private_key_file=/home/yagami/project/docker/ansible-lint/open-search/debian/.vagrant/machines/os2/virtualbox/private_key
+os3 ansible_host=127.0.0.1 ansible_port=2201 ip=10.0.1.13 roles=data,master ansible_user=vagrant ansible_ssh_private_key_file=/home/yagami/project/docker/ansible-lint/open-search/debian/.vagrant/machines/os3/virtualbox/private_key
+os4 ansible_host=127.0.0.1 ansible_port=2202 ip=10.0.1.14 roles=data,ingest ansible_user=vagrant ansible_ssh_private_key_file=/home/yagami/project/docker/ansible-lint/open-search/debian/.vagrant/machines/os4/virtualbox/private_key
+os5 ansible_host=127.0.0.1 ansible_port=2203 ip=10.0.1.15 roles=data,ingest ansible_user=vagrant ansible_ssh_private_key_file=/home/yagami/project/docker/ansible-lint/open-search/debian/.vagrant/machines/os5/virtualbox/private_key
 
-dashboards1 ansible_host=10.0.1.6  ansible_user=root ip=10.0.1.6
+os6 ansible_host=127.0.0.1 ansible_port=2204 ip=10.0.1.16 ansible_user=vagrant ansible_user=vagrant ansible_ssh_private_key_file=/home/yagami/project/docker/ansible-lint/open-search/debian/.vagrant/machines/os6/virtualbox/private_key
 
 # List all the nodes in the os cluster
 [os-cluster]
@@ -21,4 +21,10 @@ os2
 os3
 
 [dashboards]
-dashboards1
+os6
+
+[logstash]
+os4
+os5
+
+[fluentd]

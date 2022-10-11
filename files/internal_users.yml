@@ -3,24 +3,27 @@
 # The hash value is a bcrypt hash and can be generated with plugin/tools/hash.sh
 
 _meta:
-  type: "internalusers"
+  type: 'internalusers'
   config_version: 2
 
 # Define your internal users here
 
 admin:
-  hash: "{{ admin_password }}"
+  hash: '{{ admin_password }}'
   reserved: true
   backend_roles:
-  - "admin"
-  description: "admin user"
+    - 'admin'
+    - 'opensearch_admin'
+  description: 'admin user'
 
 kibanaserver:
-  hash: "{{ kibanaserver_password }}"
+  hash: '{{ kibanaserver_password }}'
   reserved: true
-  description: "kibanaserver user"
+  description: 'kibanaserver user'
 
 logstash:
-  hash: "{{ logstash_password }}"
+  hash: '{{ logstash_password }}'
   reserved: true
-  description: "logstash user"
+  backend_roles:
+    - 'logstash'
+  description: 'logstash user'

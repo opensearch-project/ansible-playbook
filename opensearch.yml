@@ -1,13 +1,24 @@
 ---
-
-- name: opensearch installation & configuration
+- name: 'Opensearch installation & configuration'
   hosts: os-cluster
   gather_facts: true
   roles:
-    - { role: linux/opensearch }
+    - { role: opensearch_roles }
 
-- name: opensearch dashboards installation & configuration
+- name: 'Logstash installation & configuration'
+  hosts: logstash
+  gather_facts: true
+  roles:
+    - { role: logstash_roles }
+
+- name: 'Opensearch dashboards installation & configuration'
   hosts: dashboards
   gather_facts: true
   roles:
-    - { role: linux/dashboards }
+    - { role: dashboards_roles }
+
+- name: 'Install fluentd'
+  hosts: all
+  gather_facts: true
+  roles:
+    - { role: fluentd_roles }

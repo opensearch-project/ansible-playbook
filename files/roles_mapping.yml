@@ -3,57 +3,54 @@
 # Permissions for OpenSearch roles are configured in roles.yml
 
 _meta:
-  type: "rolesmapping"
+  type: 'rolesmapping'
   config_version: 2
 
 kibana_server:
   reserved: true
   users:
-  - "kibanaserver"
+    - 'kibanaserver'
 
 logstash:
   reserved: true
   users:
-  - "logstash"
+    - 'logstash'
 
 # Define your roles mapping here
 all_access:
   reserved: false
   backend_roles:
-  - "admin"
-  - "opensearch_admin"
-  description: "Maps admin to all_access"
+    - 'admin'
+    - 'opensearch_admin'
+  description: 'Maps admin to all_access'
 # ----------------------------------------------------
 indexes_full_access:
   reserved: false
   backend_roles:
-  - "opensearch_admin"
-  description: "Maps admin to indexes_full_access"
+    - 'opensearch_admin'
+  description: 'Maps admin to indexes_full_access'
 # ----------------------------------------------------
 own_index:
   reserved: false
   users:
-  - "*"
-  description: "Allow full access to an index named like the username"
+    - '*'
+  description: 'Allow full access to an index named like the username'
 # ----------------------------------------------------
 readall:
   reserved: false
   backend_roles:
-  - "opensearch_index_read_all"
+    - 'opensearch_index_read_all'
 # ----------------------------------------------------
 indexes_security_search_full_access:
   reserved: true
   backend_roles:
-  - "opensearch_index_read_all"
-  - "opensearch_index_read_security"
-  description: "Maps users to indexes_security_search_full_access"
+    - 'opensearch_index_read_all'
+    - 'opensearch_index_read_security'
+  description: 'Maps users to indexes_security_search_full_access'
 # ----------------------------------------------------
 indexes_web_search_full_access:
   reserved: true
   backend_roles:
-  - "opensearch_index_read_all"
-  - "opensearch_index_read_web"
-  description: "Maps users to indexes_web_search_full_access"
-
-
-
+    - 'opensearch_index_read_all'
+    - 'opensearch_index_read_web'
+  description: 'Maps users to indexes_web_search_full_access'
