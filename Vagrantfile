@@ -21,7 +21,7 @@ provision_set=<<-SHELL
     apt-get -y autoremove
     touch /tmp/os_updated
   fi
-  apt-get install -y net-tools
+  apt-get install -y net-tools acl
   if [ "$(df -h | egrep -c "^.+#{os_vg}-#{os_lv}.+$")" -eq 1 ] ; then 
     df -h
   else
@@ -152,7 +152,8 @@ Vagrant.configure("2") do |config|
             ],
             admin_password: "Test@123",
             kibanaserver_password: "Test@6789",
-            logstash_password: "Test@5465464"
+            logstash_password: "Test@5465464",
+            host_download: "true"
           }
           #ansible.verbose = "true"
           #ansible.verbose = "-vvvv"
