@@ -14,6 +14,7 @@
     create_home: true
     home: "{{ os_home }}"
   when: download.changed or iac_enable
+  become: "true"
 
 - name: OpenSearch Install | Create home directory
   file:
@@ -22,6 +23,7 @@
     owner: "{{ os_user }}"
     group: "{{ os_user }}"
   when: download.changed or iac_enable
+  become: "true"
 
 - name: OpenSearch Install | Extract the tar file
   command: chdir=/tmp/ tar -xvzf opensearch.tar.gz -C "{{ os_home }}" --strip-components=1
@@ -52,3 +54,4 @@
   template:
     src: opensearch.service
     dest: "{{ systemctl_path }}/opensearch.service"
+  become: "true"
