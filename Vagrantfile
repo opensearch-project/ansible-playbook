@@ -1,5 +1,4 @@
 # -*- mode: ruby -*-
-# vi: set ft=ruby :
 
 net_prefix = "10.0.1"
 os_hosts = 3
@@ -127,7 +126,7 @@ Vagrant.configure("2") do |config|
           ansible.groups = {
             "os_cluster" => ["os-[1:#{os_hosts}]"],
             "master" => ["os-[1:#{os_hosts}]"],
-            "dashboards" => ["os-[#{os_hosts+1}:#{os_hosts+1+dashboard_hosts}]"]
+            "dashboards" => ["os-[#{os_hosts+1}:#{os_hosts+1+dashboard_hosts-1}]"]
           }
           ansible.extra_vars = {
             os_cluster_name: "development-cluster",
@@ -162,3 +161,5 @@ Vagrant.configure("2") do |config|
     end
   end
 end
+
+# vi: set ft=ruby :
