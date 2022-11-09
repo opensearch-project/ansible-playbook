@@ -120,7 +120,7 @@ Vagrant.configure("2") do |config|
           }
                     
           ansible.groups = {
-            "os-cluster" => ["os-[1:#{os_hosts}]"],
+            "os_cluster" => ["os-[1:#{os_hosts}]"],
             "master" => ["os-[1:#{os_hosts}]"],
             "dashboards" => ["os-[#{os_hosts+1}:#{os_hosts+1+dashboard_hosts}]"]
           }

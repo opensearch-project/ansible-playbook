@@ -310,3 +310,5 @@
   run_once: true
   when: configuration.changed
   become: false
+
+# vim:ft=ansible:

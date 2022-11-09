@@ -1,10 +1,26 @@
 ---
 # handlers file for opensearch
 - name: reload systemd configuration
-  become: yes
-  command: systemctl daemon-reload
+  systemd:
+    daemon_reload: yes
 
-# Restart service and ensure it is enabled
+# Restart service and ensure it is enabled. if iac_enable disabled it will happen in parallel.
 
 - name: restart opensearch
-  systemd: name=opensearch state=restarted enabled=yes
+  systemd:
+    name: opensearch
+    state: restarted
+    enabled: yes
+  when: not iac_enable
+  
+# Restart service and ensure it is enabled. iac_enable is disabled (means it could be production) one by one (not parallel)
+
+- name: restart opensearch
+  systemd:
+    name: opensearch
+    state: restarted
+    enabled: yes
+  throttle: 1
+  when: iac_enable
+
+# vim:ft=ansible:

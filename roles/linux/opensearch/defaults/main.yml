@@ -1,7 +1,7 @@
 ---
 
 os_nodes: |-
-        {% for item in groups['os-cluster'] -%}
+        {% for item in groups['os_cluster'] -%}
           {{ item }}{% if not loop.last %}","{% endif %}
         {%- endfor %}
 
@@ -23,3 +23,5 @@ systemctl_path: /etc/systemd/system
 
 # Auth type: 'internal' or 'oidc' (OpenID). Default: internal
 auth_type: internal
+
+# vim:ft=ansible:

@@ -7,7 +7,7 @@ os5 ansible_host=10.0.1.5  ansible_user=root ip=10.0.1.5 roles=data,ingest
 dashboards1 ansible_host=10.0.1.6  ansible_user=root ip=10.0.1.6
 
 # List all the nodes in the os cluster
-[os-cluster]
+[os_cluster]
 os1
 os2
 os3
