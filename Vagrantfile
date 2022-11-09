@@ -25,9 +25,13 @@ provision_set=<<-SHELL
   if [ "$(df -h | egrep -c "^.+#{os_vg}-#{os_lv}.+$")" -eq 1 ] ; then 
     df -h | egrep -c "^.+#{os_vg}-#{os_lv}.+$"
   else
-    pvcreate -ff -y #{os_device}
-    vgcreate #{os_vg} #{os_device}
-    lvcreate #{os_vg} -l 100%FREE -n #{os_lv}
+    if [ "$(pvs --noheadings #{os_device} | awk '{print $2}'  | grep -c #{os_vg})" -eq 0 ]; then
+      pvcreate -ff -y #{os_device}
+      vgcreate #{os_vg} #{os_device}
+      lvcreate #{os_vg} -l 100%FREE -n #{os_lv}
+    else
+      echo It seems to vg #{os_vg} on pv #{os_device} already exists
+    fi
     mkfs.ext4 /dev/#{os_vg}/#{os_lv}
     mkdir -p #{os_mountpoint}
     mount /dev/#{os_vg}/#{os_lv} #{os_mountpoint}
@@ -143,7 +147,8 @@ Vagrant.configure("2") do |config|
             admin_password: "Test@123",
             kibanaserver_password: "Test@6789"
           }
-          ansible.verbose = "v"
+          ansible.verbose = "true"
+          #ansible.verbose = "-vvvv"
         end
       end
     end
