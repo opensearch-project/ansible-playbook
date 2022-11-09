@@ -24,4 +24,5 @@ systemctl_path: /etc/systemd/system
 # Auth type: 'internal' or 'oidc' (OpenID). Default: internal
 auth_type: internal
 
+host_download: "false"
 # vim:ft=ansible:

@@ -1,13 +1,5 @@
 ---
 
-- name: OpenSearch Install | Download opensearch {{ os_version }}
-  get_url:
-    url: "{{ os_download_url }}/{{ os_version }}/opensearch-{{ os_version }}-linux-x64.tar.gz"
-    dest: "/tmp/opensearch.tar.gz"
-    timeout: 3000
-  register: download
-  become: yes
-
 - name: OpenSearch Install | Create opensearch user
   user:
     name: "{{ os_user }}"
@@ -15,8 +7,40 @@
     shell: /bin/false
     create_home: true
     home: "{{ os_home }}"
-  when: download.changed or iac_enable
   become: "true"
+
+- name: OpenSearch Install | Download opensearch {{ os_version }}
+  get_url:
+    url: "{{ os_download_url }}/{{ os_version }}/opensearch-{{ os_version }}-linux-x64.tar.gz"
+    dest: "/tmp/opensearch.tar.gz"
+    owner: "{{ os_user }}"
+    group: "{{ os_user }}"
+    timeout: 3000
+  register: download
+  become: yes
+  become_user: "{{ os_user }}"
+  when: not host_download
+
+- name: OpenSearch Install | Local download opensearch {{ os_version }}
+  delegate_to: localhost
+  get_url:
+    url: "{{ os_download_url }}/{{ os_version }}/opensearch-{{ os_version }}-linux-x64.tar.gz"
+    dest: "/tmp/opensearch.tar.gz"
+    timeout: 3000
+  when: host_download
+  register: os_downloaded
+
+- name: OpenSearch Install | Copy host downloaded opensearch {{ os_version }} to 
+  copy:
+    src: "/tmp/opensearch.tar.gz"
+    dest: "/tmp/opensearch.tar.gz"
+    owner: "{{ os_user }}"
+    group: "{{ os_user }}"
+    mode: 0444
+  register: download
+  become: yes
+  become_user: "{{ os_user }}"
+  when: host_download
 
 - name: OpenSearch Install | Create home directory
   file:
@@ -31,6 +55,7 @@
   command: chdir=/tmp/ tar -xvzf opensearch.tar.gz -C "{{ os_home }}" --strip-components=1
   when: download.changed or iac_enable
   become: "true"
+  become_user: "{{ os_user }}"
 
 - name: OpenSearch Install | Copy Configuration File
   blockinfile:
@@ -44,6 +69,7 @@
     group: "{{ os_user }}"
     mode: 0600
   become: "true"
+  become_user: "{{ os_user }}"
 
 - name: OpenSearch Install | Copy jvm.options File for Instance
   template:
@@ -54,6 +80,7 @@
     mode: 0600
     force: yes
   become: "true"
+  become_user: "{{ os_user }}"
 
 - name: OpenSearch Install | create systemd service
   template:
