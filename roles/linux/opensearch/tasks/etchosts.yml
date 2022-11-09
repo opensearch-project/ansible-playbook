@@ -11,3 +11,4 @@
     backup: yes
     marker: "# Ansible inventory hosts {mark}"
   when: populate_inventory_to_hosts_file
+  become: "true"
