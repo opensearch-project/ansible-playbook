@@ -117,6 +117,8 @@
     src: "/tmp/opensearch-nodecerts/config/{{ item }}"
     dest: "{{ os_conf_dir }}"
     mode: 0600
+    owner: "{{ os_user }}"
+    group: "{{ os_user }}"
   with_items:
     - root-ca.pem
     - root-ca.key
@@ -127,24 +129,31 @@
     - admin.key
     - admin.pem
   when: (configuration.changed and not iac_enable) or (iac_enable and force_update_cert_nodes_count | int > 0)
+  become: true
 
 - name: Security Plugin configuration | Copy the security configuration file 1 to cluster
   blockinfile:
     block: "{{ lookup('template', 'templates/security_conf.yml') }}"
     dest: "{{ os_conf_dir }}/opensearch.yml"
+    owner: "{{ os_user }}"
+    group: "{{ os_user }}"
     backup: yes
     insertafter: EOF
     marker: "## {mark} OpenSearch Security common configuration ##"
   when: configuration.changed or iac_enable
+  become: true
 
 - name: Security Plugin configuration | Copy the security configuration file 2 to cluster
   blockinfile:
     block: "{{ lookup('file', '/tmp/opensearch-nodecerts/config/{{ inventory_hostname }}_elasticsearch_config_snippet.yml') }}"
     dest: "{{ os_conf_dir }}/opensearch.yml"
+    owner: "{{ os_user }}"
+    group: "{{ os_user }}"
     backup: yes
     insertafter: EOF
     marker: "## {mark} opensearch Security Node & Admin certificates configuration ##"
   when: configuration.changed or iac_enable
+  become: true
 
 - name: Security Plugin configuration | Create security plugin configuration folder
   file:
@@ -154,6 +163,7 @@
     mode: 0700
     state: directory
   when: configuration.changed or iac_enable
+  become: true
 
 - name: Security Plugin configuration | Copy the security configuration file 3 to cluster
   template:
@@ -165,10 +175,12 @@
     mode: 0600
     force: yes
   when: auth_type == 'oidc'
+  become: true
 
 - name: Security Plugin configuration | Prepare the opensearch security configuration file
   command: sed -i 's/searchguard/plugins.security/g' {{ os_conf_dir }}/opensearch.yml
   when: configuration.changed or iac_enable
+  become: true
 
 - name: Security Plugin configuration | Set the file ownerships
   file:
@@ -176,6 +188,7 @@
     owner: "{{ os_user }}"
     group: "{{ os_user }}"
     recurse: yes
+  become: true
 
 - name: Security Plugin configuration | Set the folder permission
   file:
@@ -183,12 +196,14 @@
     owner: "{{ os_user }}"
     group: "{{ os_user }}"
     mode: 0700
+  become: true
 
 - name: Security Plugin configuration | Restart opensearch with security configuration
   systemd:
     name: opensearch
     state: restarted
     enabled: yes
+  become: true
 
 - name: Pause for 10 seconds to provide sometime for OpenSearch start
   pause:
@@ -198,9 +213,12 @@
   template:
     src: internal_users.yml
     dest: "{{ os_sec_plugin_conf_path }}/internal_users.yml"
+    owner: "{{ os_user }}"
+    group: "{{ os_user }}"
     mode: 0644
   run_once: true
   when: configuration.changed or iac_enable
+  become: "true"
 
 - name: Security Plugin configuration | Copy custom configuration files to cluster
   template:
@@ -213,6 +231,7 @@
     force: yes
   with_items: "{{ custom_security_plugin_configs }}"
   when: copy_custom_security_configs
+  become: "true"
 
 - name: Security Plugin configuration | Set the Admin user password
   shell: >
@@ -222,6 +241,7 @@
     JAVA_HOME: "{{ os_home }}/jdk"
   run_once: true
   when: configuration.changed or iac_enable
+  become: "true"
 
 - name: Security Plugin configuration | Set the kibanaserver user pasword
   shell: >
@@ -231,6 +251,7 @@
     JAVA_HOME: "{{ os_home }}/jdk"
   run_once: true
   when: configuration.changed or iac_enable
+  become: "true"
 
 - name: Security Plugin configuration | Check that the files/internal_users.yml exists
   stat:
@@ -271,6 +292,7 @@
       run_once: true
       when: configuration.changed or copy_custom_security_configs
       with_items: "{{ custom_users_filtered }}"
+      become: "true"
 
   when: custom_users_result.stat.exists
 
@@ -287,6 +309,7 @@
     JAVA_HOME: "{{ os_home }}/jdk"
   run_once: true
   when: configuration.changed and copy_custom_security_configs
+  become: true
 
 - name: Security Plugin configuration | Initialize the opensearch security index in opensearch with default configs
   shell: >
@@ -301,6 +324,7 @@
     JAVA_HOME: "{{ os_home }}/jdk"
   run_once: true
   when: configuration.changed and not copy_custom_security_configs
+  become: true
 
 - name: Security Plugin configuration | Cleanup local temporary directory
   local_action:
