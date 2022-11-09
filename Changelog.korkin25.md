@@ -3,5 +3,6 @@
 I have added following features to original [OpenSearch Ansible playbook](https://github.com/opensearch-project/ansible-playbook)
 - Vargantfile for full stack testing
 - fixed root-privilegies escalation on roles to able work not only under ansible root user
+- # vim:ft=ansible:
 
 Enjoy the DevOps life!
