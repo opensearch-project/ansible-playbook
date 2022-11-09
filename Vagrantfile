@@ -12,7 +12,7 @@ os_lv = "opensearch"
 os_mountpoint="/usr/share/opensearch"
 
 provision_set=<<-SHELL
-  set -eux
+  #set -eux
   if [ -f /tmp/os_updated ]; then
     echo OS already updated
   else
@@ -23,18 +23,19 @@ provision_set=<<-SHELL
   fi
   apt-get install -y net-tools
   if [ "$(df -h | egrep -c "^.+#{os_vg}-#{os_lv}.+$")" -eq 1 ] ; then 
-    df -h | egrep -c "^.+#{os_vg}-#{os_lv}.+$"
+    df -h
   else
     if [ "$(pvs --noheadings #{os_device} | awk '{print $2}'  | grep -c #{os_vg})" -eq 0 ]; then
       pvcreate -ff -y #{os_device}
       vgcreate #{os_vg} #{os_device}
       lvcreate #{os_vg} -l 100%FREE -n #{os_lv}
+      mkfs.ext4 /dev/#{os_vg}/#{os_lv}
+      mkdir -p #{os_mountpoint}
+      echo "/dev/mapper/#{os_vg}-#{os_lv} #{os_mountpoint}   ext4   errors=remount-ro   0   1" >> /etc/fstab
+      mount #{os_mountpoint}
     else
       echo It seems to vg #{os_vg} on pv #{os_device} already exists
     fi
-    mkfs.ext4 /dev/#{os_vg}/#{os_lv}
-    mkdir -p #{os_mountpoint}
-    mount /dev/#{os_vg}/#{os_lv} #{os_mountpoint}
   fi
 SHELL
 
@@ -82,7 +83,7 @@ Vagrant.configure("2") do |config|
         if i < os_hosts+dashboard_hosts #os host
           node.vm.hostname = "os-#{i}"
           v.name = "os-#{i}"
-          v.memory = "1024"
+          v.memory = "2048"
           v.cpus = "1"
           v.gui = false
         else #dashboards host
@@ -143,11 +144,17 @@ Vagrant.configure("2") do |config|
             auth_type: "internal",
             copy_custom_security_configs: "false",
             iac_enable: "true",
-
+            custom_security_plugin_configs: [
+                "files/tenants.yml",
+                "files/roles.yml",
+                "files/roles_mapping.yml",
+                "files/internal_users.yml"
+            ],
             admin_password: "Test@123",
-            kibanaserver_password: "Test@6789"
+            kibanaserver_password: "Test@6789",
+            logstash_password: "Test@5465464"
           }
-          ansible.verbose = "true"
+          #ansible.verbose = "true"
           #ansible.verbose = "-vvvv"
         end
       end
