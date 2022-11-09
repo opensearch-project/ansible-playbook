@@ -30,6 +30,9 @@
 - name: OpenSearch Install | Extract the tar file
   command: chdir=/tmp/ tar -xvzf opensearch.tar.gz -C "{{ os_home }}" --strip-components=1
   when: download.changed or iac_enable
+  #become_user: "{{ os_user }}"
+  become: "true"
+
 
 - name: OpenSearch Install | Copy Configuration File
   blockinfile:
@@ -42,6 +45,7 @@
     owner: "{{ os_user }}"
     group: "{{ os_user }}"
     mode: 0600
+  become: "true"
 
 - name: OpenSearch Install | Copy jvm.options File for Instance
   template:
@@ -51,6 +55,7 @@
     group: "{{ os_user }}"
     mode: 0600
     force: yes
+  become: "true"
 
 - name: OpenSearch Install | create systemd service
   template:
