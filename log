@@ -1,0 +1,375 @@
+==> os-4: Using /home/kk573/work/github/opensearch-ansible-playbook for persistent storage.
+==> os-4: Running provisioner: shell...
+    os-4: Running: inline script
+    os-4: OS already updated
+    os-4: Reading package lists...
+    os-4: Building dependency tree...
+    os-4: Reading state information...
+    os-4: net-tools is already the newest version (1.60+git20180626.aebd88e-1ubuntu1).
+    os-4: 0 upgraded, 0 newly installed, 0 to remove and 0 not upgraded.
+    os-4: Filesystem                         Size  Used Avail Use% Mounted on
+    os-4: udev                               472M     0  472M   0% /dev
+    os-4: tmpfs                               98M  976K   97M   1% /run
+    os-4: /dev/sda1                           39G  1.6G   38G   4% /
+    os-4: tmpfs                              489M     0  489M   0% /dev/shm
+    os-4: tmpfs                              5.0M     0  5.0M   0% /run/lock
+    os-4: tmpfs                              489M     0  489M   0% /sys/fs/cgroup
+    os-4: /dev/loop0                          64M   64M     0 100% /snap/core20/1634
+    os-4: /dev/loop1                          48M   48M     0 100% /snap/snapd/17336
+    os-4: /dev/loop2                          68M   68M     0 100% /snap/lxd/22753
+    os-4: vagrant                            467G  326G  141G  70% /vagrant
+    os-4: /dev/mapper/opensearch-opensearch  4.9G   24K  4.6G   1% /usr/share/opensearch
+    os-4: tmpfs                               98M     0   98M   0% /run/user/1000
+==> os-4: Running provisioner: ansible...
+==> os-4: Vagrant has detected a host range pattern in the `groups` option.
+==> os-4: Vagrant doesn't fully check the validity of these parameters!
+==> os-4: 
+==> os-4: Please check https://docs.ansible.com/ansible/latest/user_guide/intro_inventory.html#inventory-basics-formats-hosts-and-groups
+==> os-4: for more information.
+    os-4: Running ansible-playbook...
+
+PLAY [opensearch installation & configuration] *********************************
+
+TASK [Gathering Facts] *********************************************************
+ok: [os-1]
+ok: [os-3]
+ok: [os-2]
+
+TASK [linux/opensearch : hostname] *********************************************
+ok: [os-1]
+ok: [os-3]
+ok: [os-2]
+
+TASK [linux/opensearch : Disable the selinux] **********************************
+skipping: [os-1]
+skipping: [os-2]
+skipping: [os-3]
+
+TASK [linux/opensearch : Hosts | populate inventory into hosts file] ***********
+ok: [os-3]
+ok: [os-1]
+ok: [os-2]
+
+TASK [linux/opensearch : Set vm.max_map_count in sysctl.conf] ******************
+[WARNING]: The value "262144" (type int) was converted to "'262144'" (type
+string). If this does not look like what you expect, quote the entire value to
+ensure it does not change.
+ok: [os-1]
+ok: [os-3]
+ok: [os-2]
+
+TASK [linux/opensearch : Set open files limit in sysctl.conf] ******************
+[WARNING]: The value "65536" (type int) was converted to "'65536'" (type
+string). If this does not look like what you expect, quote the entire value to
+ensure it does not change.
+ok: [os-1]
+ok: [os-2]
+ok: [os-3]
+
+TASK [linux/opensearch : OpenSearch Install | Create opensearch user] **********
+ok: [os-1]
+ok: [os-3]
+ok: [os-2]
+
+TASK [linux/opensearch : OpenSearch Install | Download opensearch 2.3.0] *******
+skipping: [os-1]
+skipping: [os-2]
+skipping: [os-3]
+
+TASK [linux/opensearch : OpenSearch Install | Local download opensearch 2.3.0] ***
+ok: [os-2]
+ok: [os-3]
+ok: [os-1]
+
+TASK [linux/opensearch : OpenSearch Install | Copy host downloaded opensearch 2.3.0 to] ***
+ok: [os-3]
+ok: [os-1]
+ok: [os-2]
+
+TASK [linux/opensearch : OpenSearch Install | Create home directory] ***********
+ok: [os-2]
+ok: [os-1]
+ok: [os-3]
+
+TASK [linux/opensearch : OpenSearch Install | Extract the tar file] ************
+[WARNING]: Consider using the unarchive module rather than running 'tar'.  If
+you need to use command because unarchive is insufficient you can add 'warn:
+false' to this command task or set 'command_warnings=False' in ansible.cfg to
+get rid of this message.
+changed: [os-3]
+changed: [os-1]
+changed: [os-2]
+
+TASK [linux/opensearch : OpenSearch Install | Copy Configuration File] *********
+changed: [os-1]
+changed: [os-2]
+changed: [os-3]
+
+TASK [linux/opensearch : OpenSearch Install | Copy jvm.options File for Instance] ***
+changed: [os-3]
+changed: [os-1]
+changed: [os-2]
+
+TASK [linux/opensearch : OpenSearch Install | create systemd service] **********
+ok: [os-1]
+ok: [os-2]
+ok: [os-3]
+
+TASK [linux/opensearch : Security Plugin configuration | Force remove local temporary directory for certificates generation] ***
+ok: [os-1]
+
+TASK [linux/opensearch : Security Plugin configuration | Create local temporary directory for certificates generation] ***
+changed: [os-1]
+
+TASK [linux/opensearch : Security Plugin configuration | Download certificates generation tool] ***
+changed: [os-1]
+
+TASK [linux/opensearch : Security Plugin configuration | Extract the certificates generation tool] ***
+changed: [os-1]
+
+TASK [linux/opensearch : Security Plugin configuration | Make the executable file] ***
+ok: [os-1]
+
+TASK [linux/opensearch : Security Plugin configuration | Prepare the certificates generation template file] ***
+changed: [os-1]
+
+TASK [linux/opensearch : Security Plugin configuration | Generate the node & admin certificates in local] ***
+changed: [os-1]
+
+TASK [linux/opensearch : Security Plugin configuration | Check cert exists] ****
+ok: [os-2] => (item=/usr/share/opensearch/config/root-ca.pem)
+ok: [os-1] => (item=/usr/share/opensearch/config/root-ca.pem)
+ok: [os-3] => (item=/usr/share/opensearch/config/root-ca.pem)
+ok: [os-2] => (item=/usr/share/opensearch/config/root-ca.key)
+ok: [os-1] => (item=/usr/share/opensearch/config/root-ca.key)
+ok: [os-3] => (item=/usr/share/opensearch/config/root-ca.key)
+ok: [os-1] => (item=/usr/share/opensearch/config/os-1.key)
+ok: [os-2] => (item=/usr/share/opensearch/config/os-2.key)
+ok: [os-3] => (item=/usr/share/opensearch/config/os-3.key)
+ok: [os-3] => (item=/usr/share/opensearch/config/os-3.pem)
+ok: [os-2] => (item=/usr/share/opensearch/config/os-2.pem)
+ok: [os-1] => (item=/usr/share/opensearch/config/os-1.pem)
+ok: [os-3] => (item=/usr/share/opensearch/config/os-3_http.key)
+ok: [os-2] => (item=/usr/share/opensearch/config/os-2_http.key)
+ok: [os-1] => (item=/usr/share/opensearch/config/os-1_http.key)
+ok: [os-3] => (item=/usr/share/opensearch/config/os-3_http.pem)
+ok: [os-2] => (item=/usr/share/opensearch/config/os-2_http.pem)
+ok: [os-1] => (item=/usr/share/opensearch/config/os-1_http.pem)
+ok: [os-3] => (item=/usr/share/opensearch/config/admin.key)
+ok: [os-2] => (item=/usr/share/opensearch/config/admin.key)
+ok: [os-1] => (item=/usr/share/opensearch/config/admin.key)
+ok: [os-3] => (item=/usr/share/opensearch/config/admin.pem)
+ok: [os-2] => (item=/usr/share/opensearch/config/admin.pem)
+ok: [os-1] => (item=/usr/share/opensearch/config/admin.pem)
+
+TASK [linux/opensearch : Security Plugin configuration | Set fact. The initial value "Don't update certs"] ***
+ok: [os-1]
+ok: [os-2]
+ok: [os-3]
+
+TASK [linux/opensearch : Security Plugin configuration | Set fact. Update certificates if at least one certificate is not found] ***
+skipping: [os-3] => (item={'changed': False, 'stat': {'exists': True, 'path': '/usr/share/opensearch/config/root-ca.pem', 'mode': '0600', 'isdir': False, 'ischr': False, 'isblk': False, 'isreg': True, 'isfifo': False, 'islnk': False, 'issock': False, 'uid': 1002, 'gid': 1002, 'size': 1277, 'inode': 16, 'dev': 64768, 'nlink': 1, 'atime': 1668027063.9709578, 'mtime': 1668027052.2971234, 'ctime': 1668027052.4091794, 'wusr': True, 'rusr': True, 'xusr': False, 'wgrp': False, 'rgrp': False, 'xgrp': False, 'woth': False, 'roth': False, 'xoth': False, 'isuid': False, 'isgid': False, 'blocks': 8, 'block_size': 4096, 'device_type': 0, 'readable': False, 'writeable': False, 'executable': False, 'pw_name': 'opensearch', 'gr_name': 'opensearch'}, 'invocation': {'module_args': {'path': '/usr/share/opensearch/config/root-ca.pem', 'get_attributes': False, 'get_checksum': False, 'get_mime': False, 'follow': False, 'get_md5': False, 'checksum_algorithm': 'sha1'}}, 'failed': False, 'item': '/usr/share/opensearch/config/root-ca.pem', 'ansible_loop_var': 'item'}) 
+skipping: [os-3] => (item={'changed': False, 'stat': {'exists': True, 'path': '/usr/share/opensearch/config/root-ca.key', 'mode': '0600', 'isdir': False, 'ischr': False, 'isblk': False, 'isreg': True, 'isfifo': False, 'islnk': False, 'issock': False, 'uid': 1002, 'gid': 1002, 'size': 1704, 'inode': 726, 'dev': 64768, 'nlink': 1, 'atime': 1668027064.7553496, 'mtime': 1668027052.7213354, 'ctime': 1668027052.8493996, 'wusr': True, 'rusr': True, 'xusr': False, 'wgrp': False, 'rgrp': False, 'xgrp': False, 'woth': False, 'roth': False, 'xoth': False, 'isuid': False, 'isgid': False, 'blocks': 8, 'block_size': 4096, 'device_type': 0, 'readable': False, 'writeable': False, 'executable': False, 'pw_name': 'opensearch', 'gr_name': 'opensearch'}, 'invocation': {'module_args': {'path': '/usr/share/opensearch/config/root-ca.key', 'get_attributes': False, 'get_checksum': False, 'get_mime': False, 'follow': False, 'get_md5': False, 'checksum_algorithm': 'sha1'}}, 'failed': False, 'item': '/usr/share/opensearch/config/root-ca.key', 'ansible_loop_var': 'item'}) 
+skipping: [os-1] => (item={'changed': False, 'stat': {'exists': True, 'path': '/usr/share/opensearch/config/root-ca.pem', 'mode': '0600', 'isdir': False, 'ischr': False, 'isblk': False, 'isreg': True, 'isfifo': False, 'islnk': False, 'issock': False, 'uid': 1002, 'gid': 1002, 'size': 1277, 'inode': 16, 'dev': 64768, 'nlink': 1, 'atime': 1668027063.9989367, 'mtime': 1668027052.3371086, 'ctime': 1668027052.4651725, 'wusr': True, 'rusr': True, 'xusr': False, 'wgrp': False, 'rgrp': False, 'xgrp': False, 'woth': False, 'roth': False, 'xoth': False, 'isuid': False, 'isgid': False, 'blocks': 8, 'block_size': 4096, 'device_type': 0, 'readable': False, 'writeable': False, 'executable': False, 'pw_name': 'opensearch', 'gr_name': 'opensearch'}, 'invocation': {'module_args': {'path': '/usr/share/opensearch/config/root-ca.pem', 'get_attributes': False, 'get_checksum': False, 'get_mime': False, 'follow': False, 'get_md5': False, 'checksum_algorithm': 'sha1'}}, 'failed': False, 'item': '/usr/share/opensearch/config/root-ca.pem', 'ansible_loop_var': 'item'}) 
+skipping: [os-3] => (item={'changed': False, 'stat': {'exists': True, 'path': '/usr/share/opensearch/config/os-3.key', 'mode': '0600', 'isdir': False, 'ischr': False, 'isblk': False, 'isreg': True, 'isfifo': False, 'islnk': False, 'issock': False, 'uid': 1002, 'gid': 1002, 'size': 1700, 'inode': 727, 'dev': 64768, 'nlink': 1, 'atime': 1668027063.9709578, 'mtime': 1668027053.1575534, 'ctime': 1668027053.2936215, 'wusr': True, 'rusr': True, 'xusr': False, 'wgrp': False, 'rgrp': False, 'xgrp': False, 'woth': False, 'roth': False, 'xoth': False, 'isuid': False, 'isgid': False, 'blocks': 8, 'block_size': 4096, 'device_type': 0, 'readable': False, 'writeable': False, 'executable': False, 'pw_name': 'opensearch', 'gr_name': 'opensearch'}, 'invocation': {'module_args': {'path': '/usr/share/opensearch/config/os-3.key', 'get_attributes': False, 'get_checksum': False, 'get_mime': False, 'follow': False, 'get_md5': False, 'checksum_algorithm': 'sha1'}}, 'failed': False, 'item': '/usr/share/opensearch/config/os-3.key', 'ansible_loop_var': 'item'}) 
+skipping: [os-3] => (item={'changed': False, 'stat': {'exists': True, 'path': '/usr/share/opensearch/config/os-3.pem', 'mode': '0600', 'isdir': False, 'ischr': False, 'isblk': False, 'isreg': True, 'isfifo': False, 'islnk': False, 'issock': False, 'uid': 1002, 'gid': 1002, 'size': 1489, 'inode': 728, 'dev': 64768, 'nlink': 1, 'atime': 1668027063.8468957, 'mtime': 1668027053.6417954, 'ctime': 1668027053.7778635, 'wusr': True, 'rusr': True, 'xusr': False, 'wgrp': False, 'rgrp': False, 'xgrp': False, 'woth': False, 'roth': False, 'xoth': False, 'isuid': False, 'isgid': False, 'blocks': 8, 'block_size': 4096, 'device_type': 0, 'readable': False, 'writeable': False, 'executable': False, 'pw_name': 'opensearch', 'gr_name': 'opensearch'}, 'invocation': {'module_args': {'path': '/usr/share/opensearch/config/os-3.pem', 'get_attributes': False, 'get_checksum': False, 'get_mime': False, 'follow': False, 'get_md5': False, 'checksum_algorithm': 'sha1'}}, 'failed': False, 'item': '/usr/share/opensearch/config/os-3.pem', 'ansible_loop_var': 'item'}) 
+skipping: [os-1] => (item={'changed': False, 'stat': {'exists': True, 'path': '/usr/share/opensearch/config/root-ca.key', 'mode': '0600', 'isdir': False, 'ischr': False, 'isblk': False, 'isreg': True, 'isfifo': False, 'islnk': False, 'issock': False, 'uid': 1002, 'gid': 1002, 'size': 1704, 'inode': 726, 'dev': 64768, 'nlink': 1, 'atime': 1668027064.8713727, 'mtime': 1668027052.7853324, 'ctime': 1668027052.9133966, 'wusr': True, 'rusr': True, 'xusr': False, 'wgrp': False, 'rgrp': False, 'xgrp': False, 'woth': False, 'roth': False, 'xoth': False, 'isuid': False, 'isgid': False, 'blocks': 8, 'block_size': 4096, 'device_type': 0, 'readable': False, 'writeable': False, 'executable': False, 'pw_name': 'opensearch', 'gr_name': 'opensearch'}, 'invocation': {'module_args': {'path': '/usr/share/opensearch/config/root-ca.key', 'get_attributes': False, 'get_checksum': False, 'get_mime': False, 'follow': False, 'get_md5': False, 'checksum_algorithm': 'sha1'}}, 'failed': False, 'item': '/usr/share/opensearch/config/root-ca.key', 'ansible_loop_var': 'item'}) 
+skipping: [os-2] => (item={'changed': False, 'stat': {'exists': True, 'path': '/usr/share/opensearch/config/root-ca.pem', 'mode': '0600', 'isdir': False, 'ischr': False, 'isblk': False, 'isreg': True, 'isfifo': False, 'islnk': False, 'issock': False, 'uid': 1002, 'gid': 1002, 'size': 1277, 'inode': 16, 'dev': 64768, 'nlink': 1, 'atime': 1668027064.226072, 'mtime': 1668027052.7043138, 'ctime': 1668027052.8283758, 'wusr': True, 'rusr': True, 'xusr': False, 'wgrp': False, 'rgrp': False, 'xgrp': False, 'woth': False, 'roth': False, 'xoth': False, 'isuid': False, 'isgid': False, 'blocks': 8, 'block_size': 4096, 'device_type': 0, 'readable': False, 'writeable': False, 'executable': False, 'pw_name': 'opensearch', 'gr_name': 'opensearch'}, 'invocation': {'module_args': {'path': '/usr/share/opensearch/config/root-ca.pem', 'get_attributes': False, 'get_checksum': False, 'get_mime': False, 'follow': False, 'get_md5': False, 'checksum_algorithm': 'sha1'}}, 'failed': False, 'item': '/usr/share/opensearch/config/root-ca.pem', 'ansible_loop_var': 'item'}) 
+skipping: [os-1] => (item={'changed': False, 'stat': {'exists': True, 'path': '/usr/share/opensearch/config/os-1.key', 'mode': '0600', 'isdir': False, 'ischr': False, 'isblk': False, 'isreg': True, 'isfifo': False, 'islnk': False, 'issock': False, 'uid': 1002, 'gid': 1002, 'size': 1704, 'inode': 727, 'dev': 64768, 'nlink': 1, 'atime': 1668027063.9909327, 'mtime': 1668027053.2175486, 'ctime': 1668027053.3456125, 'wusr': True, 'rusr': True, 'xusr': False, 'wgrp': False, 'rgrp': False, 'xgrp': False, 'woth': False, 'roth': False, 'xoth': False, 'isuid': False, 'isgid': False, 'blocks': 8, 'block_size': 4096, 'device_type': 0, 'readable': False, 'writeable': False, 'executable': False, 'pw_name': 'opensearch', 'gr_name': 'opensearch'}, 'invocation': {'module_args': {'path': '/usr/share/opensearch/config/os-1.key', 'get_attributes': False, 'get_checksum': False, 'get_mime': False, 'follow': False, 'get_md5': False, 'checksum_algorithm': 'sha1'}}, 'failed': False, 'item': '/usr/share/opensearch/config/os-1.key', 'ansible_loop_var': 'item'}) 
+skipping: [os-3] => (item={'changed': False, 'stat': {'exists': True, 'path': '/usr/share/opensearch/config/os-3_http.key', 'mode': '0600', 'isdir': False, 'ischr': False, 'isblk': False, 'isreg': True, 'isfifo': False, 'islnk': False, 'issock': False, 'uid': 1002, 'gid': 1002, 'size': 1704, 'inode': 729, 'dev': 64768, 'nlink': 1, 'atime': 1668027064.2070758, 'mtime': 1668027054.0820155, 'ctime': 1668027054.2060776, 'wusr': True, 'rusr': True, 'xusr': False, 'wgrp': False, 'rgrp': False, 'xgrp': False, 'woth': False, 'roth': False, 'xoth': False, 'isuid': False, 'isgid': False, 'blocks': 8, 'block_size': 4096, 'device_type': 0, 'readable': False, 'writeable': False, 'executable': False, 'pw_name': 'opensearch', 'gr_name': 'opensearch'}, 'invocation': {'module_args': {'path': '/usr/share/opensearch/config/os-3_http.key', 'get_attributes': False, 'get_checksum': False, 'get_mime': False, 'follow': False, 'get_md5': False, 'checksum_algorithm': 'sha1'}}, 'failed': False, 'item': '/usr/share/opensearch/config/os-3_http.key', 'ansible_loop_var': 'item'}) 
+skipping: [os-2] => (item={'changed': False, 'stat': {'exists': True, 'path': '/usr/share/opensearch/config/root-ca.key', 'mode': '0600', 'isdir': False, 'ischr': False, 'isblk': False, 'isreg': True, 'isfifo': False, 'islnk': False, 'issock': False, 'uid': 1002, 'gid': 1002, 'size': 1704, 'inode': 726, 'dev': 64768, 'nlink': 1, 'atime': 1668027065.0104642, 'mtime': 1668027053.1525378, 'ctime': 1668027053.2766, 'wusr': True, 'rusr': True, 'xusr': False, 'wgrp': False, 'rgrp': False, 'xgrp': False, 'woth': False, 'roth': False, 'xoth': False, 'isuid': False, 'isgid': False, 'blocks': 8, 'block_size': 4096, 'device_type': 0, 'readable': False, 'writeable': False, 'executable': False, 'pw_name': 'opensearch', 'gr_name': 'opensearch'}, 'invocation': {'module_args': {'path': '/usr/share/opensearch/config/root-ca.key', 'get_attributes': False, 'get_checksum': False, 'get_mime': False, 'follow': False, 'get_md5': False, 'checksum_algorithm': 'sha1'}}, 'failed': False, 'item': '/usr/share/opensearch/config/root-ca.key', 'ansible_loop_var': 'item'}) 
+skipping: [os-1] => (item={'changed': False, 'stat': {'exists': True, 'path': '/usr/share/opensearch/config/os-1.pem', 'mode': '0600', 'isdir': False, 'ischr': False, 'isblk': False, 'isreg': True, 'isfifo': False, 'islnk': False, 'issock': False, 'uid': 1002, 'gid': 1002, 'size': 1489, 'inode': 728, 'dev': 64768, 'nlink': 1, 'atime': 1668027063.9028888, 'mtime': 1668027053.6937866, 'ctime': 1668027053.8138466, 'wusr': True, 'rusr': True, 'xusr': False, 'wgrp': False, 'rgrp': False, 'xgrp': False, 'woth': False, 'roth': False, 'xoth': False, 'isuid': False, 'isgid': False, 'blocks': 8, 'block_size': 4096, 'device_type': 0, 'readable': False, 'writeable': False, 'executable': False, 'pw_name': 'opensearch', 'gr_name': 'opensearch'}, 'invocation': {'module_args': {'path': '/usr/share/opensearch/config/os-1.pem', 'get_attributes': False, 'get_checksum': False, 'get_mime': False, 'follow': False, 'get_md5': False, 'checksum_algorithm': 'sha1'}}, 'failed': False, 'item': '/usr/share/opensearch/config/os-1.pem', 'ansible_loop_var': 'item'}) 
+skipping: [os-3] => (item={'changed': False, 'stat': {'exists': True, 'path': '/usr/share/opensearch/config/os-3_http.pem', 'mode': '0600', 'isdir': False, 'ischr': False, 'isblk': False, 'isreg': True, 'isfifo': False, 'islnk': False, 'issock': False, 'uid': 1002, 'gid': 1002, 'size': 1489, 'inode': 730, 'dev': 64768, 'nlink': 1, 'atime': 1668027064.2070758, 'mtime': 1668027054.5142314, 'ctime': 1668027054.6382935, 'wusr': True, 'rusr': True, 'xusr': False, 'wgrp': False, 'rgrp': False, 'xgrp': False, 'woth': False, 'roth': False, 'xoth': False, 'isuid': False, 'isgid': False, 'blocks': 8, 'block_size': 4096, 'device_type': 0, 'readable': False, 'writeable': False, 'executable': False, 'pw_name': 'opensearch', 'gr_name': 'opensearch'}, 'invocation': {'module_args': {'path': '/usr/share/opensearch/config/os-3_http.pem', 'get_attributes': False, 'get_checksum': False, 'get_mime': False, 'follow': False, 'get_md5': False, 'checksum_algorithm': 'sha1'}}, 'failed': False, 'item': '/usr/share/opensearch/config/os-3_http.pem', 'ansible_loop_var': 'item'}) 
+skipping: [os-2] => (item={'changed': False, 'stat': {'exists': True, 'path': '/usr/share/opensearch/config/os-2.key', 'mode': '0600', 'isdir': False, 'ischr': False, 'isblk': False, 'isreg': True, 'isfifo': False, 'islnk': False, 'issock': False, 'uid': 1002, 'gid': 1002, 'size': 1704, 'inode': 727, 'dev': 64768, 'nlink': 1, 'atime': 1668027064.214066, 'mtime': 1668027053.5887558, 'ctime': 1668027053.712818, 'wusr': True, 'rusr': True, 'xusr': False, 'wgrp': False, 'rgrp': False, 'xgrp': False, 'woth': False, 'roth': False, 'xoth': False, 'isuid': False, 'isgid': False, 'blocks': 8, 'block_size': 4096, 'device_type': 0, 'readable': False, 'writeable': False, 'executable': False, 'pw_name': 'opensearch', 'gr_name': 'opensearch'}, 'invocation': {'module_args': {'path': '/usr/share/opensearch/config/os-2.key', 'get_attributes': False, 'get_checksum': False, 'get_mime': False, 'follow': False, 'get_md5': False, 'checksum_algorithm': 'sha1'}}, 'failed': False, 'item': '/usr/share/opensearch/config/os-2.key', 'ansible_loop_var': 'item'}) 
+skipping: [os-1] => (item={'changed': False, 'stat': {'exists': True, 'path': '/usr/share/opensearch/config/os-1_http.key', 'mode': '0600', 'isdir': False, 'ischr': False, 'isblk': False, 'isreg': True, 'isfifo': False, 'islnk': False, 'issock': False, 'uid': 1002, 'gid': 1002, 'size': 1704, 'inode': 729, 'dev': 64768, 'nlink': 1, 'atime': 1668027064.3471107, 'mtime': 1668027054.1420105, 'ctime': 1668027054.2700746, 'wusr': True, 'rusr': True, 'xusr': False, 'wgrp': False, 'rgrp': False, 'xgrp': False, 'woth': False, 'roth': False, 'xoth': False, 'isuid': False, 'isgid': False, 'blocks': 8, 'block_size': 4096, 'device_type': 0, 'readable': False, 'writeable': False, 'executable': False, 'pw_name': 'opensearch', 'gr_name': 'opensearch'}, 'invocation': {'module_args': {'path': '/usr/share/opensearch/config/os-1_http.key', 'get_attributes': False, 'get_checksum': False, 'get_mime': False, 'follow': False, 'get_md5': False, 'checksum_algorithm': 'sha1'}}, 'failed': False, 'item': '/usr/share/opensearch/config/os-1_http.key', 'ansible_loop_var': 'item'}) 
+skipping: [os-3] => (item={'changed': False, 'stat': {'exists': True, 'path': '/usr/share/opensearch/config/admin.key', 'mode': '0600', 'isdir': False, 'ischr': False, 'isblk': False, 'isreg': True, 'isfifo': False, 'islnk': False, 'issock': False, 'uid': 1002, 'gid': 1002, 'size': 1704, 'inode': 731, 'dev': 64768, 'nlink': 1, 'atime': 1668027064.7233338, 'mtime': 1668027054.9344416, 'ctime': 1668027055.0785136, 'wusr': True, 'rusr': True, 'xusr': False, 'wgrp': False, 'rgrp': False, 'xgrp': False, 'woth': False, 'roth': False, 'xoth': False, 'isuid': False, 'isgid': False, 'blocks': 8, 'block_size': 4096, 'device_type': 0, 'readable': False, 'writeable': False, 'executable': False, 'pw_name': 'opensearch', 'gr_name': 'opensearch'}, 'invocation': {'module_args': {'path': '/usr/share/opensearch/config/admin.key', 'get_attributes': False, 'get_checksum': False, 'get_mime': False, 'follow': False, 'get_md5': False, 'checksum_algorithm': 'sha1'}}, 'failed': False, 'item': '/usr/share/opensearch/config/admin.key', 'ansible_loop_var': 'item'}) 
+skipping: [os-2] => (item={'changed': False, 'stat': {'exists': True, 'path': '/usr/share/opensearch/config/os-2.pem', 'mode': '0600', 'isdir': False, 'ischr': False, 'isblk': False, 'isreg': True, 'isfifo': False, 'islnk': False, 'issock': False, 'uid': 1002, 'gid': 1002, 'size': 1489, 'inode': 728, 'dev': 64768, 'nlink': 1, 'atime': 1668027064.1580381, 'mtime': 1668027054.0529878, 'ctime': 1668027054.1730478, 'wusr': True, 'rusr': True, 'xusr': False, 'wgrp': False, 'rgrp': False, 'xgrp': False, 'woth': False, 'roth': False, 'xoth': False, 'isuid': False, 'isgid': False, 'blocks': 8, 'block_size': 4096, 'device_type': 0, 'readable': False, 'writeable': False, 'executable': False, 'pw_name': 'opensearch', 'gr_name': 'opensearch'}, 'invocation': {'module_args': {'path': '/usr/share/opensearch/config/os-2.pem', 'get_attributes': False, 'get_checksum': False, 'get_mime': False, 'follow': False, 'get_md5': False, 'checksum_algorithm': 'sha1'}}, 'failed': False, 'item': '/usr/share/opensearch/config/os-2.pem', 'ansible_loop_var': 'item'}) 
+skipping: [os-3] => (item={'changed': False, 'stat': {'exists': True, 'path': '/usr/share/opensearch/config/admin.pem', 'mode': '0600', 'isdir': False, 'ischr': False, 'isblk': False, 'isreg': True, 'isfifo': False, 'islnk': False, 'issock': False, 'uid': 1002, 'gid': 1002, 'size': 1436, 'inode': 732, 'dev': 64768, 'nlink': 1, 'atime': 1668027064.7393417, 'mtime': 1668027055.3866675, 'ctime': 1668027055.4987235, 'wusr': True, 'rusr': True, 'xusr': False, 'wgrp': False, 'rgrp': False, 'xgrp': False, 'woth': False, 'roth': False, 'xoth': False, 'isuid': False, 'isgid': False, 'blocks': 8, 'block_size': 4096, 'device_type': 0, 'readable': False, 'writeable': False, 'executable': False, 'pw_name': 'opensearch', 'gr_name': 'opensearch'}, 'invocation': {'module_args': {'path': '/usr/share/opensearch/config/admin.pem', 'get_attributes': False, 'get_checksum': False, 'get_mime': False, 'follow': False, 'get_md5': False, 'checksum_algorithm': 'sha1'}}, 'failed': False, 'item': '/usr/share/opensearch/config/admin.pem', 'ansible_loop_var': 'item'}) 
+skipping: [os-1] => (item={'changed': False, 'stat': {'exists': True, 'path': '/usr/share/opensearch/config/os-1_http.pem', 'mode': '0600', 'isdir': False, 'ischr': False, 'isblk': False, 'isreg': True, 'isfifo': False, 'islnk': False, 'issock': False, 'uid': 1002, 'gid': 1002, 'size': 1489, 'inode': 730, 'dev': 64768, 'nlink': 1, 'atime': 1668027064.3471107, 'mtime': 1668027054.5782285, 'ctime': 1668027054.7022905, 'wusr': True, 'rusr': True, 'xusr': False, 'wgrp': False, 'rgrp': False, 'xgrp': False, 'woth': False, 'roth': False, 'xoth': False, 'isuid': False, 'isgid': False, 'blocks': 8, 'block_size': 4096, 'device_type': 0, 'readable': False, 'writeable': False, 'executable': False, 'pw_name': 'opensearch', 'gr_name': 'opensearch'}, 'invocation': {'module_args': {'path': '/usr/share/opensearch/config/os-1_http.pem', 'get_attributes': False, 'get_checksum': False, 'get_mime': False, 'follow': False, 'get_md5': False, 'checksum_algorithm': 'sha1'}}, 'failed': False, 'item': '/usr/share/opensearch/config/os-1_http.pem', 'ansible_loop_var': 'item'}) 
+skipping: [os-2] => (item={'changed': False, 'stat': {'exists': True, 'path': '/usr/share/opensearch/config/os-2_http.key', 'mode': '0600', 'isdir': False, 'ischr': False, 'isblk': False, 'isreg': True, 'isfifo': False, 'islnk': False, 'issock': False, 'uid': 1002, 'gid': 1002, 'size': 1704, 'inode': 729, 'dev': 64768, 'nlink': 1, 'atime': 1668027064.5422301, 'mtime': 1668027054.4972098, 'ctime': 1668027054.613268, 'wusr': True, 'rusr': True, 'xusr': False, 'wgrp': False, 'rgrp': False, 'xgrp': False, 'woth': False, 'roth': False, 'xoth': False, 'isuid': False, 'isgid': False, 'blocks': 8, 'block_size': 4096, 'device_type': 0, 'readable': False, 'writeable': False, 'executable': False, 'pw_name': 'opensearch', 'gr_name': 'opensearch'}, 'invocation': {'module_args': {'path': '/usr/share/opensearch/config/os-2_http.key', 'get_attributes': False, 'get_checksum': False, 'get_mime': False, 'follow': False, 'get_md5': False, 'checksum_algorithm': 'sha1'}}, 'failed': False, 'item': '/usr/share/opensearch/config/os-2_http.key', 'ansible_loop_var': 'item'}) 
+skipping: [os-1] => (item={'changed': False, 'stat': {'exists': True, 'path': '/usr/share/opensearch/config/admin.key', 'mode': '0600', 'isdir': False, 'ischr': False, 'isblk': False, 'isreg': True, 'isfifo': False, 'islnk': False, 'issock': False, 'uid': 1002, 'gid': 1002, 'size': 1704, 'inode': 731, 'dev': 64768, 'nlink': 1, 'atime': 1668027064.8753748, 'mtime': 1668027055.0024405, 'ctime': 1668027055.1545165, 'wusr': True, 'rusr': True, 'xusr': False, 'wgrp': False, 'rgrp': False, 'xgrp': False, 'woth': False, 'roth': False, 'xoth': False, 'isuid': False, 'isgid': False, 'blocks': 8, 'block_size': 4096, 'device_type': 0, 'readable': False, 'writeable': False, 'executable': False, 'pw_name': 'opensearch', 'gr_name': 'opensearch'}, 'invocation': {'module_args': {'path': '/usr/share/opensearch/config/admin.key', 'get_attributes': False, 'get_checksum': False, 'get_mime': False, 'follow': False, 'get_md5': False, 'checksum_algorithm': 'sha1'}}, 'failed': False, 'item': '/usr/share/opensearch/config/admin.key', 'ansible_loop_var': 'item'}) 
+skipping: [os-2] => (item={'changed': False, 'stat': {'exists': True, 'path': '/usr/share/opensearch/config/os-2_http.pem', 'mode': '0600', 'isdir': False, 'ischr': False, 'isblk': False, 'isreg': True, 'isfifo': False, 'islnk': False, 'issock': False, 'uid': 1002, 'gid': 1002, 'size': 1489, 'inode': 730, 'dev': 64768, 'nlink': 1, 'atime': 1668027064.5422301, 'mtime': 1668027054.929426, 'ctime': 1668027055.0454838, 'wusr': True, 'rusr': True, 'xusr': False, 'wgrp': False, 'rgrp': False, 'xgrp': False, 'woth': False, 'roth': False, 'xoth': False, 'isuid': False, 'isgid': False, 'blocks': 8, 'block_size': 4096, 'device_type': 0, 'readable': False, 'writeable': False, 'executable': False, 'pw_name': 'opensearch', 'gr_name': 'opensearch'}, 'invocation': {'module_args': {'path': '/usr/share/opensearch/config/os-2_http.pem', 'get_attributes': False, 'get_checksum': False, 'get_mime': False, 'follow': False, 'get_md5': False, 'checksum_algorithm': 'sha1'}}, 'failed': False, 'item': '/usr/share/opensearch/config/os-2_http.pem', 'ansible_loop_var': 'item'}) 
+skipping: [os-1] => (item={'changed': False, 'stat': {'exists': True, 'path': '/usr/share/opensearch/config/admin.pem', 'mode': '0600', 'isdir': False, 'ischr': False, 'isblk': False, 'isreg': True, 'isfifo': False, 'islnk': False, 'issock': False, 'uid': 1002, 'gid': 1002, 'size': 1436, 'inode': 732, 'dev': 64768, 'nlink': 1, 'atime': 1668027064.8713727, 'mtime': 1668027055.4586685, 'ctime': 1668027055.5827305, 'wusr': True, 'rusr': True, 'xusr': False, 'wgrp': False, 'rgrp': False, 'xgrp': False, 'woth': False, 'roth': False, 'xoth': False, 'isuid': False, 'isgid': False, 'blocks': 8, 'block_size': 4096, 'device_type': 0, 'readable': False, 'writeable': False, 'executable': False, 'pw_name': 'opensearch', 'gr_name': 'opensearch'}, 'invocation': {'module_args': {'path': '/usr/share/opensearch/config/admin.pem', 'get_attributes': False, 'get_checksum': False, 'get_mime': False, 'follow': False, 'get_md5': False, 'checksum_algorithm': 'sha1'}}, 'failed': False, 'item': '/usr/share/opensearch/config/admin.pem', 'ansible_loop_var': 'item'}) 
+skipping: [os-2] => (item={'changed': False, 'stat': {'exists': True, 'path': '/usr/share/opensearch/config/admin.key', 'mode': '0600', 'isdir': False, 'ischr': False, 'isblk': False, 'isreg': True, 'isfifo': False, 'islnk': False, 'issock': False, 'uid': 1002, 'gid': 1002, 'size': 1704, 'inode': 731, 'dev': 64768, 'nlink': 1, 'atime': 1668027065.0104642, 'mtime': 1668027055.3496358, 'ctime': 1668027055.453688, 'wusr': True, 'rusr': True, 'xusr': False, 'wgrp': False, 'rgrp': False, 'xgrp': False, 'woth': False, 'roth': False, 'xoth': False, 'isuid': False, 'isgid': False, 'blocks': 8, 'block_size': 4096, 'device_type': 0, 'readable': False, 'writeable': False, 'executable': False, 'pw_name': 'opensearch', 'gr_name': 'opensearch'}, 'invocation': {'module_args': {'path': '/usr/share/opensearch/config/admin.key', 'get_attributes': False, 'get_checksum': False, 'get_mime': False, 'follow': False, 'get_md5': False, 'checksum_algorithm': 'sha1'}}, 'failed': False, 'item': '/usr/share/opensearch/config/admin.key', 'ansible_loop_var': 'item'}) 
+skipping: [os-2] => (item={'changed': False, 'stat': {'exists': True, 'path': '/usr/share/opensearch/config/admin.pem', 'mode': '0600', 'isdir': False, 'ischr': False, 'isblk': False, 'isreg': True, 'isfifo': False, 'islnk': False, 'issock': False, 'uid': 1002, 'gid': 1002, 'size': 1436, 'inode': 732, 'dev': 64768, 'nlink': 1, 'atime': 1668027064.994456, 'mtime': 1668027055.761842, 'ctime': 1668027055.881902, 'wusr': True, 'rusr': True, 'xusr': False, 'wgrp': False, 'rgrp': False, 'xgrp': False, 'woth': False, 'roth': False, 'xoth': False, 'isuid': False, 'isgid': False, 'blocks': 8, 'block_size': 4096, 'device_type': 0, 'readable': False, 'writeable': False, 'executable': False, 'pw_name': 'opensearch', 'gr_name': 'opensearch'}, 'invocation': {'module_args': {'path': '/usr/share/opensearch/config/admin.pem', 'get_attributes': False, 'get_checksum': False, 'get_mime': False, 'follow': False, 'get_md5': False, 'checksum_algorithm': 'sha1'}}, 'failed': False, 'item': '/usr/share/opensearch/config/admin.pem', 'ansible_loop_var': 'item'}) 
+
+TASK [linux/opensearch : Security Plugin configuration | Show the force_update_cert setting] ***
+ok: [os-1] => {
+    "msg": "force_update_cert: False"
+}
+ok: [os-2] => {
+    "msg": "force_update_cert: False"
+}
+ok: [os-3] => {
+    "msg": "force_update_cert: False"
+}
+
+TASK [linux/opensearch : Security Plugin configuration | Count force_update_cert nodes] ***
+ok: [os-1]
+ok: [os-2]
+ok: [os-3]
+
+TASK [linux/opensearch : Security Plugin configuration | Show the force_update_cert_nodes_count setting] ***
+ok: [os-1] => {
+    "msg": "force_update_cert_nodes_count: 0"
+}
+ok: [os-2] => {
+    "msg": "force_update_cert_nodes_count: 0"
+}
+ok: [os-3] => {
+    "msg": "force_update_cert_nodes_count: 0"
+}
+
+TASK [linux/opensearch : Security Plugin configuration | Do need to update certificates] ***
+skipping: [os-1]
+skipping: [os-2]
+skipping: [os-3]
+
+TASK [linux/opensearch : Security Plugin configuration | IaC disabled - Count force_update_cert nodes] ***
+skipping: [os-1]
+skipping: [os-2]
+skipping: [os-3]
+
+TASK [linux/opensearch : Security Plugin configuration | Copy the node & admin certificates to opensearch nodes if at least one certificate is not found on at least one server] ***
+skipping: [os-1] => (item=root-ca.pem) 
+skipping: [os-1] => (item=root-ca.key) 
+skipping: [os-2] => (item=root-ca.pem) 
+skipping: [os-1] => (item=os-1.key) 
+skipping: [os-2] => (item=root-ca.key) 
+skipping: [os-1] => (item=os-1.pem) 
+skipping: [os-2] => (item=os-2.key) 
+skipping: [os-1] => (item=os-1_http.key) 
+skipping: [os-3] => (item=root-ca.pem) 
+skipping: [os-1] => (item=os-1_http.pem) 
+skipping: [os-2] => (item=os-2.pem) 
+skipping: [os-3] => (item=root-ca.key) 
+skipping: [os-2] => (item=os-2_http.key) 
+skipping: [os-1] => (item=admin.key) 
+skipping: [os-3] => (item=os-3.key) 
+skipping: [os-1] => (item=admin.pem) 
+skipping: [os-2] => (item=os-2_http.pem) 
+skipping: [os-3] => (item=os-3.pem) 
+skipping: [os-2] => (item=admin.key) 
+skipping: [os-3] => (item=os-3_http.key) 
+skipping: [os-2] => (item=admin.pem) 
+skipping: [os-3] => (item=os-3_http.pem) 
+skipping: [os-3] => (item=admin.key) 
+skipping: [os-3] => (item=admin.pem) 
+
+TASK [linux/opensearch : Security Plugin configuration | Copy the security configuration file 1 to cluster] ***
+changed: [os-1]
+changed: [os-3]
+changed: [os-2]
+
+TASK [linux/opensearch : Security Plugin configuration | Copy the security configuration file 2 to cluster] ***
+changed: [os-2]
+changed: [os-1]
+changed: [os-3]
+
+TASK [linux/opensearch : Security Plugin configuration | Create security plugin configuration folder] ***
+changed: [os-1]
+changed: [os-2]
+changed: [os-3]
+
+TASK [linux/opensearch : Security Plugin configuration | Copy the security configuration file 3 to cluster] ***
+skipping: [os-1]
+skipping: [os-2]
+skipping: [os-3]
+
+TASK [linux/opensearch : Security Plugin configuration | Prepare the opensearch security configuration file] ***
+[WARNING]: Consider using the replace, lineinfile or template module rather
+than running 'sed'.  If you need to use command because replace, lineinfile or
+template is insufficient you can add 'warn: false' to this command task or set
+'command_warnings=False' in ansible.cfg to get rid of this message.
+changed: [os-2]
+changed: [os-1]
+changed: [os-3]
+
+TASK [linux/opensearch : Security Plugin configuration | Set the file ownerships] ***
+ok: [os-3]
+ok: [os-1]
+ok: [os-2]
+
+TASK [linux/opensearch : Security Plugin configuration | Set the folder permission] ***
+changed: [os-2]
+changed: [os-1]
+changed: [os-3]
+
+TASK [linux/opensearch : Security Plugin configuration | Restart opensearch with security configuration] ***
+changed: [os-3]
+changed: [os-2]
+changed: [os-1]
+
+TASK [linux/opensearch : Pause for 30 seconds to provide sometime for OpenSearch start] ***
+Pausing for 30 seconds
+(ctrl+C then 'C' = continue early, ctrl+C then 'A' = abort)
+ok: [os-1]
+
+TASK [linux/opensearch : Security Plugin configuration | Copy the opensearch security internal users template] ***
+changed: [os-1]
+
+TASK [linux/opensearch : Security Plugin configuration | Copy custom configuration files to cluster] ***
+changed: [os-2] => (item=files/tenants.yml)
+changed: [os-1] => (item=files/tenants.yml)
+changed: [os-3] => (item=files/tenants.yml)
+changed: [os-1] => (item=files/roles.yml)
+changed: [os-2] => (item=files/roles.yml)
+changed: [os-3] => (item=files/roles.yml)
+changed: [os-1] => (item=files/roles_mapping.yml)
+changed: [os-3] => (item=files/roles_mapping.yml)
+changed: [os-2] => (item=files/roles_mapping.yml)
+changed: [os-3] => (item=files/internal_users.yml)
+changed: [os-1] => (item=files/internal_users.yml)
+changed: [os-2] => (item=files/internal_users.yml)
+
+TASK [linux/opensearch : Security Plugin configuration | Set the Admin user password] ***
+changed: [os-1]
+
+TASK [linux/opensearch : Security Plugin configuration | Set the kibanaserver user pasword] ***
+changed: [os-1]
+
+TASK [linux/opensearch : Security Plugin configuration | Check that the files/internal_users.yml exists] ***
+ok: [os-1]
+
+TASK [linux/opensearch : Security Plugin configuration | Load custom internal users configuration] ***
+ok: [os-1]
+
+TASK [linux/opensearch : Security Plugin configuration | Filter service keys from the list of users] ***
+ok: [os-1]
+ok: [os-2]
+ok: [os-3]
+
+TASK [linux/opensearch : Security Plugin configuration | Set passwords for all users from custom config] ***
+changed: [os-1] => (item=admin)
+changed: [os-1] => (item=kibanaserver)
+changed: [os-1] => (item=logstash)
+
+TASK [linux/opensearch : Security Plugin configuration | Initialize the opensearch security index in opensearch with custom configs] ***
+changed: [os-1]
+
+TASK [linux/opensearch : Security Plugin configuration | Initialize the opensearch security index in opensearch with default configs] ***
+skipping: [os-1]
+
+TASK [linux/opensearch : Security Plugin configuration | Cleanup local temporary directory] ***
+changed: [os-1]
+
+TASK [linux/opensearch : Remove `cluster.initial_master_nodes` setting from configuration] ***
+changed: [os-1]
+changed: [os-2]
+changed: [os-3]
+
+TASK [linux/opensearch : Make sure opensearch is started] **********************
+ok: [os-2]
+ok: [os-3]
+ok: [os-1]
+
+TASK [linux/opensearch : Get all the installed ES plugins] *********************
+fatal: [os-1]: FAILED! => {"msg": "Failed to set permissions on the temporary files Ansible needs to create when becoming an unprivileged user (rc: 1, err: chown: changing ownership of '/var/tmp/ansible-tmp-1668031683.0319362-2724505-83461168180788/': Operation not permitted\nchown: changing ownership of '/var/tmp/ansible-tmp-1668031683.0319362-2724505-83461168180788/AnsiballZ_command.py': Operation not permitted\n}). For information on working around this, see https://docs.ansible.com/ansible/become.html#becoming-an-unprivileged-user"}
+fatal: [os-2]: FAILED! => {"msg": "Failed to set permissions on the temporary files Ansible needs to create when becoming an unprivileged user (rc: 1, err: chown: changing ownership of '/var/tmp/ansible-tmp-1668031683.0390518-2724506-231772953402954/': Operation not permitted\nchown: changing ownership of '/var/tmp/ansible-tmp-1668031683.0390518-2724506-231772953402954/AnsiballZ_command.py': Operation not permitted\n}). For information on working around this, see https://docs.ansible.com/ansible/become.html#becoming-an-unprivileged-user"}
+fatal: [os-3]: FAILED! => {"msg": "Failed to set permissions on the temporary files Ansible needs to create when becoming an unprivileged user (rc: 1, err: chown: changing ownership of '/var/tmp/ansible-tmp-1668031683.0463626-2724508-220823251440480/': Operation not permitted\nchown: changing ownership of '/var/tmp/ansible-tmp-1668031683.0463626-2724508-220823251440480/AnsiballZ_command.py': Operation not permitted\n}). For information on working around this, see https://docs.ansible.com/ansible/become.html#becoming-an-unprivileged-user"}
+
+PLAY RECAP *********************************************************************
+os-1                       : ok=45   changed=22   unreachable=0    failed=1    skipped=8    rescued=0    ignored=0   
+os-2                       : ok=29   changed=11   unreachable=0    failed=1    skipped=7    rescued=0    ignored=0   
+os-3                       : ok=29   changed=11   unreachable=0    failed=1    skipped=7    rescued=0    ignored=0   
+

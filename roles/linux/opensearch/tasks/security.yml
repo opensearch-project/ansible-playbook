@@ -78,6 +78,8 @@
         - "{{ os_conf_dir }}/{{ inventory_hostname }}_http.pem"
         - "{{ os_conf_dir }}/admin.key"
         - "{{ os_conf_dir }}/admin.pem"
+      become: yes
+      become_user: "{{ os_user }}"
 
     - name: Security Plugin configuration | Set fact. The initial value "Don't update certs"
       set_fact:
@@ -129,7 +131,8 @@
     - admin.key
     - admin.pem
   when: (configuration.changed and not iac_enable) or (iac_enable and force_update_cert_nodes_count | int > 0)
-  become: true
+  become: yes
+  become_user: "{{ os_user }}"
 
 - name: Security Plugin configuration | Copy the security configuration file 1 to cluster
   blockinfile:
@@ -142,6 +145,7 @@
     marker: "## {mark} OpenSearch Security common configuration ##"
   when: configuration.changed or iac_enable
   become: true
+  become_user: "{{ os_user }}"
 
 - name: Security Plugin configuration | Copy the security configuration file 2 to cluster
   blockinfile:
@@ -154,6 +158,7 @@
     marker: "## {mark} opensearch Security Node & Admin certificates configuration ##"
   when: configuration.changed or iac_enable
   become: true
+  become_user: "{{ os_user }}"
 
 - name: Security Plugin configuration | Create security plugin configuration folder
   file:
@@ -164,6 +169,7 @@
     state: directory
   when: configuration.changed or iac_enable
   become: true
+  become_user: "{{ os_user }}"
 
 - name: Security Plugin configuration | Copy the security configuration file 3 to cluster
   template:
@@ -176,11 +182,13 @@
     force: yes
   when: auth_type == 'oidc'
   become: true
+  become_user: "{{ os_user }}"
 
 - name: Security Plugin configuration | Prepare the opensearch security configuration file
   command: sed -i 's/searchguard/plugins.security/g' {{ os_conf_dir }}/opensearch.yml
   when: configuration.changed or iac_enable
   become: true
+  become_user: "{{ os_user }}"
 
 - name: Security Plugin configuration | Set the file ownerships
   file:
@@ -205,9 +213,9 @@
     enabled: yes
   become: true
 
-- name: Pause for 10 seconds to provide sometime for OpenSearch start
+- name: Pause for 30 seconds to provide sometime for OpenSearch start
   pause:
-    seconds: 10
+    seconds: 30
 
 - name: Security Plugin configuration | Copy the opensearch security internal users template
   template:
@@ -219,6 +227,7 @@
   run_once: true
   when: configuration.changed or iac_enable
   become: "true"
+  become_user: "{{ os_user }}"
 
 - name: Security Plugin configuration | Copy custom configuration files to cluster
   template:
@@ -232,6 +241,7 @@
   with_items: "{{ custom_security_plugin_configs }}"
   when: copy_custom_security_configs
   become: "true"
+  become_user: "{{ os_user }}"
 
 - name: Security Plugin configuration | Set the Admin user password
   shell: >
@@ -242,6 +252,7 @@
   run_once: true
   when: configuration.changed or iac_enable
   become: "true"
+  become_user: "{{ os_user }}"
 
 - name: Security Plugin configuration | Set the kibanaserver user pasword
   shell: >
@@ -252,6 +263,7 @@
   run_once: true
   when: configuration.changed or iac_enable
   become: "true"
+  become_user: "{{ os_user }}"
 
 - name: Security Plugin configuration | Check that the files/internal_users.yml exists
   stat:
@@ -260,6 +272,7 @@
   delegate_to: localhost
   run_once: true
   become: false
+  become_user: "{{ os_user }}"
 
 - name: Security Plugin configuration | Check for a custom configuration for internal users and hash passwords for them
   block:
@@ -293,6 +306,7 @@
       when: configuration.changed or copy_custom_security_configs
       with_items: "{{ custom_users_filtered }}"
       become: "true"
+      become_user: "{{ os_user }}"
 
   when: custom_users_result.stat.exists
 
@@ -310,6 +324,7 @@
   run_once: true
   when: configuration.changed and copy_custom_security_configs
   become: true
+  become_user: "{{ os_user }}"
 
 - name: Security Plugin configuration | Initialize the opensearch security index in opensearch with default configs
   shell: >
@@ -325,6 +340,7 @@
   run_once: true
   when: configuration.changed and not copy_custom_security_configs
   become: true
+  become_user: "{{ os_user }}"
 
 - name: Security Plugin configuration | Cleanup local temporary directory
   local_action:

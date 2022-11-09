@@ -25,6 +25,7 @@
 # remove the cluster.initial_master_nodes setting from each nodes' configuration.
 - name: Remove `cluster.initial_master_nodes` setting from configuration
   command: sed -i '/cluster.initial_master_nodes/d' "{{os_conf_dir}}/opensearch.yml"
+  become: yes
 
 - name: Make sure opensearch is started
   service:
@@ -34,7 +35,11 @@
 
 - name: Get all the installed ES plugins
   command: "{{ os_plugin_bin_path }} list"
+  environment:
+    OPENSEARCH_JAVA_HOME: "{{ os_home }}/jdk"
   register: list_plugins
+  become: yes
+  become_user: "{{ os_user }}"
 
 - name: Show all the installed ES plugins
   debug:
