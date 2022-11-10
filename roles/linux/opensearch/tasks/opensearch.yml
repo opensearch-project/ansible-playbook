@@ -7,7 +7,7 @@
     shell: /bin/false
     create_home: true
     home: "{{ os_home }}"
-  become: "true"
+  become: yes
 
 - name: OpenSearch Install | Download opensearch {{ os_version }}
   get_url:
@@ -36,7 +36,7 @@
     dest: "/tmp/opensearch.tar.gz"
     owner: "{{ os_user }}"
     group: "{{ os_user }}"
-    mode: 0444
+    mode: 0400
   register: download
   become: yes
   become_user: "{{ os_user }}"
@@ -48,14 +48,23 @@
     state: directory
     owner: "{{ os_user }}"
     group: "{{ os_user }}"
+    mode: 0770
   when: download.changed or iac_enable
-  become: "true"
+  become: yes
 
 - name: OpenSearch Install | Extract the tar file
-  command: chdir=/tmp/ tar -xvzf opensearch.tar.gz -C "{{ os_home }}" --strip-components=1
+  command: chdir=/tmp/ tar -xzf opensearch.tar.gz -C "{{ os_home }}" --strip-components=1
   when: download.changed or iac_enable
-  become: "true"
+  become: yes
   become_user: "{{ os_user }}"
+
+- name: Security Plugin configuration | Set the file ownerships
+  file:
+    dest: "{{ os_home }}"
+    owner: "{{ os_user }}"
+    group: "{{ os_user }}"
+    recurse: yes
+  become: true
 
 - name: OpenSearch Install | Copy Configuration File
   blockinfile:
@@ -68,7 +77,7 @@
     owner: "{{ os_user }}"
     group: "{{ os_user }}"
     mode: 0600
-  become: "true"
+  become: yes
   become_user: "{{ os_user }}"
 
 - name: OpenSearch Install | Copy jvm.options File for Instance
@@ -79,7 +88,7 @@
     group: "{{ os_user }}"
     mode: 0600
     force: yes
-  become: "true"
+  become: yes
   become_user: "{{ os_user }}"
 
 - name: OpenSearch Install | create systemd service
@@ -87,6 +96,6 @@
     src: opensearch.service
     dest: "{{ systemctl_path }}/opensearch.service"
     mode: 0644
-  become: "true"
+  become: yes
 
 # vim:ft=ansible:

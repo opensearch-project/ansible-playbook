@@ -26,11 +26,14 @@
     url: https://search.maven.org/remotecontent?filepath=com/floragunn/search-guard-tlstool/1.5/search-guard-tlstool-1.5.tar.gz
     dest: /tmp/opensearch-nodecerts/search-guard-tlstool.tar.gz
   run_once: true
-  when: configuration.changed
+  when: configuration.changed 
   become: false
 
 - name: Security Plugin configuration | Extract the certificates generation tool
-  local_action: command chdir=/tmp/opensearch-nodecerts tar -xvf search-guard-tlstool.tar.gz
+  delegate_to: 127.0.0.1
+  unarchive:
+    src: /tmp/opensearch-nodecerts/search-guard-tlstool.tar.gz
+    dest: /tmp/opensearch-nodecerts
   run_once: true
   when: configuration.changed
   become: false
@@ -49,6 +52,7 @@
     module: template
     src: tlsconfig.yml
     dest: /tmp/opensearch-nodecerts/config/tlsconfig.yml
+    mode: 0600
   run_once: true
   when: configuration.changed
   become: false
@@ -226,7 +230,7 @@
     mode: 0644
   run_once: true
   when: configuration.changed or iac_enable
-  become: "true"
+  become: yes
   become_user: "{{ os_user }}"
 
 - name: Security Plugin configuration | Copy custom configuration files to cluster
@@ -240,7 +244,7 @@
     force: yes
   with_items: "{{ custom_security_plugin_configs }}"
   when: copy_custom_security_configs
-  become: "true"
+  become: yes
   become_user: "{{ os_user }}"
 
 - name: Security Plugin configuration | Set the Admin user password
@@ -251,7 +255,7 @@
     JAVA_HOME: "{{ os_home }}/jdk"
   run_once: true
   when: configuration.changed or iac_enable
-  become: "true"
+  become: yes
   become_user: "{{ os_user }}"
 
 - name: Security Plugin configuration | Set the kibanaserver user pasword
@@ -262,7 +266,7 @@
     JAVA_HOME: "{{ os_home }}/jdk"
   run_once: true
   when: configuration.changed or iac_enable
-  become: "true"
+  become: yes
   become_user: "{{ os_user }}"
 
 - name: Security Plugin configuration | Check that the files/internal_users.yml exists
@@ -305,7 +309,7 @@
       run_once: true
       when: configuration.changed or copy_custom_security_configs
       with_items: "{{ custom_users_filtered }}"
-      become: "true"
+      become: yes
       become_user: "{{ os_user }}"
 
   when: custom_users_result.stat.exists
