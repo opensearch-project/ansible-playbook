@@ -17,10 +17,12 @@ provision_set=<<-SHELL
   else
     apt-get update
     apt-get -y upgrade
+    apt-get install -y net-tools acl
+    apt-get -y purge snapd modemmanager usb-modeswitch || true
     apt-get -y autoremove
+    systemctl stop getty@tty1.service serial-getty@ttyS0.service systemd-logind.service
     touch /tmp/os_updated
   fi
-  apt-get install -y net-tools acl
   if [ "$(df -h | egrep -c "^.+#{os_vg}-#{os_lv}.+$")" -eq 1 ] ; then 
     df -h
   else
@@ -155,7 +157,7 @@ Vagrant.configure("2") do |config|
             host_download: "true"
           }
           #ansible.verbose = "true"
-          #ansible.verbose = "-vvvv"
+          ansible.verbose = "-vvvv"
         end
       end
     end
