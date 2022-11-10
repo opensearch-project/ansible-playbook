@@ -2,12 +2,14 @@
 
 - hostname:
     name: "{{ inventory_hostname }}"
+  become: yes
 
 # Disabling for Amazon Linux 2 as selinux is disabled by default.
 - name: Disable the selinux
   selinux:
     state: disabled
   when: (ansible_distribution != "Ubuntu") and (ansible_distribution != "Amazon")
+  become: yes
 
 - name: Populate the nodes to /etc/hosts
   import_tasks: etchosts.yml
@@ -23,10 +25,13 @@
     name: dashboards
     state: started
     enabled: yes
+  become: yes
 
 - name: Get all the installed dashboards plugins
-  command: "sudo -u {{ os_dashboards_user }} {{ os_plugin_bin_path }} list"
+  command: "{{ os_plugin_bin_path }} list"
   register: list_plugins
+  become: yes
+  become_user: "{{ os_dashboards_user }}"
 
 - name: Show all the installed dashboards plugins
   debug:
