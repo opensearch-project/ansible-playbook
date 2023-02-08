@@ -8,6 +8,8 @@
   selinux:
     state: disabled
   when: (ansible_distribution != "Ubuntu") and (ansible_distribution != "Amazon")
+  register: result
+  failed_when: result.msg | default('ok', True) is not search('(^ok$|libselinux-python|(SELinux state changed))')
 
 - name: Populate the nodes to /etc/hosts
   import_tasks: etchosts.yml
