@@ -1,11 +1,5 @@
 ---
 
-- name: Dashboards Install | Download opensearch dashbaord {{ os_dashboards_version }}
-  get_url:
-    url: "{{ os_download_url }}-dashboards/{{ os_dashboards_version }}/opensearch-dashboards-{{ os_dashboards_version }}-linux-x64.tar.gz"
-    dest: "/tmp/opensearch-dashboards.tar.gz"
-  register: download
-
 - name: Dashboards Install | Create opensearch dashboard user
   user:
     name: "{{ os_dashboards_user }}"
@@ -13,7 +7,38 @@
     shell: /bin/false
     create_home: true
     home: "{{ os_dashboards_home }}"
-  when: download.changed or iac_enable
+  become: yes
+
+- name: Dashboards Install | Download opensearch dashbaord {{ os_dashboards_version }}
+  get_url:
+    url: "{{ os_download_url }}-dashboards/{{ os_dashboards_version }}/opensearch-dashboards-{{ os_dashboards_version }}-linux-x64.tar.gz"
+    dest: "/tmp/opensearch-dashboards.tar.gz"
+    timeout: 3000
+  register: download
+  become: yes
+  become_user: "{{ os_dashboards_user }}"
+  when: not host_download
+
+- name: Dashboards Install | Local download opensearch {{ os_version }}
+  delegate_to: localhost
+  get_url:
+    url: "{{ os_download_url }}-dashboards/{{ os_dashboards_version }}/opensearch-dashboards-{{ os_dashboards_version }}-linux-x64.tar.gz"
+    dest: "/tmp/opensearch-dashboards.tar.gz"
+    timeout: 3000
+  register: dashboards_downloaded
+  when: host_download
+
+- name: Dashboards Install | Copy host downloaded opensearch {{ os_version }} to remotes
+  copy:
+    src: "/tmp/opensearch-dashboards.tar.gz"
+    dest: "/tmp/opensearch-dashboards.tar.gz"
+    owner: "{{ os_dashboards_user }}"
+    group: "{{ os_dashboards_user }}"
+    mode: 0400
+  become: yes
+  become_user: "{{ os_dashboards_user }}"
+  register: download
+  when: host_download
 
 - name: Dashboards Install | Create home directory
   file:
@@ -21,11 +46,14 @@
     state: directory
     owner: "{{ os_dashboards_user }}"
     group: "{{ os_dashboards_user }}"
+    mode: 0770
   when: download.changed or iac_enable
+  become: yes
 
 - name: Dashboards Install | Extract the tar file
   command: chdir=/tmp/ tar -xvzf opensearch-dashboards.tar.gz -C "{{ os_dashboards_home }}" --strip-components=1
   when: download.changed or iac_enable
+  become: yes
 
 - name: Dashboards Install | Copy Configuration File
   template:
@@ -35,6 +63,8 @@
     group: "{{ os_dashboards_user }}"
     mode: 0644
     backup: yes
+  become: yes
+  become_user: "{{ os_dashboards_user }}"
 
 - name: Dashboards Install | Set the file ownerships
   file:
@@ -42,15 +72,18 @@
     owner: "{{ os_dashboards_user }}"
     group: "{{ os_dashboards_user }}"
     recurse: yes
+  become: yes
 
 - name: Dashboards Install | Set the folder permission
   file:
     dest: "{{ os_conf_dir }}"
     owner: "{{ os_dashboards_user }}"
     group: "{{ os_dashboards_user }}"
-    mode: 0700
+    mode: 0770
+  become: yes
 
 - name: Dashboards Install | create systemd service
   template:
     src: dashboards.service
     dest: "{{ systemctl_path }}/dashboards.service"
+  become: yes

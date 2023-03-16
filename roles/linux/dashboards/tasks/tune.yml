@@ -4,3 +4,4 @@
     name: fs.file-max
     value: 65536
     state: present
+  become: yes
