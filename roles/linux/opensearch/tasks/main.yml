@@ -30,7 +30,7 @@
   service:
     name: opensearch
     state: started
-    enabled: yes
+    enabled: true
 
 - name: Get all the installed ES plugins
   command: "{{ os_plugin_bin_path }} list"

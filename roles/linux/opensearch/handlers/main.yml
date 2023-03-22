@@ -1,7 +1,7 @@
 ---
 # handlers file for opensearch
 - name: reload systemd configuration
-  become: yes
+  become: true
   command: systemctl daemon-reload
 
 # Restart service and ensure it is enabled

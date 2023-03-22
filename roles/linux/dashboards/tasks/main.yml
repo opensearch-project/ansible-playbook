@@ -22,7 +22,7 @@
   service:
     name: dashboards
     state: started
-    enabled: yes
+    enabled: true
 
 - name: Get all the installed dashboards plugins
   command: "sudo -u {{ os_dashboards_user }} {{ os_plugin_bin_path }} list"

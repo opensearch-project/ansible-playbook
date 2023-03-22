@@ -31,9 +31,9 @@
   blockinfile:
     block: "{{ lookup('template', 'templates/opensearch-{{ cluster_type }}.yml') }}"
     dest: "{{ os_conf_dir }}/opensearch.yml"
-    backup: yes
+    backup: true
     state: present
-    create: yes
+    create: true
     marker: "## {mark} opensearch main configuration ##"
     owner: "{{ os_user }}"
     group: "{{ os_user }}"
@@ -46,7 +46,7 @@
     owner: "{{ os_user }}"
     group: "{{ os_user }}"
     mode: 0600
-    force: yes
+    force: true
 
 - name: OpenSearch Install | create systemd service
   template:

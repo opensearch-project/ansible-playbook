@@ -34,14 +34,14 @@
     owner: "{{ os_dashboards_user }}"
     group: "{{ os_dashboards_user }}"
     mode: 0644
-    backup: yes
+    backup: true
 
 - name: Dashboards Install | Set the file ownerships
   file:
     dest: "{{ os_dashboards_home }}"
     owner: "{{ os_dashboards_user }}"
     group: "{{ os_dashboards_user }}"
-    recurse: yes
+    recurse: true
 
 - name: Dashboards Install | Set the folder permission
   file:

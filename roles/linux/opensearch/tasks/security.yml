@@ -65,9 +65,9 @@
     - name: Security Plugin configuration | Check cert exists
       stat:
         path: "{{ item }}"
-        get_attributes: no
-        get_checksum: no
-        get_mime: no
+        get_attributes: false
+        get_checksum: false
+        get_mime: false
       register: cert_stat_result
       with_items:
         - "{{ os_conf_dir }}/root-ca.pem"
@@ -132,7 +132,7 @@
   blockinfile:
     block: "{{ lookup('template', 'templates/security_conf.yml') }}"
     dest: "{{ os_conf_dir }}/opensearch.yml"
-    backup: yes
+    backup: true
     insertafter: EOF
     marker: "## {mark} OpenSearch Security common configuration ##"
   when: configuration.changed or iac_enable
@@ -141,7 +141,7 @@
   blockinfile:
     block: "{{ lookup('file', '/tmp/opensearch-nodecerts/config/{{ inventory_hostname }}_elasticsearch_config_snippet.yml') }}"
     dest: "{{ os_conf_dir }}/opensearch.yml"
-    backup: yes
+    backup: true
     insertafter: EOF
     marker: "## {mark} opensearch Security Node & Admin certificates configuration ##"
   when: configuration.changed or iac_enable
@@ -159,11 +159,11 @@
   template:
     src: security_plugin_conf.yml
     dest: "{{ os_sec_plugin_conf_path }}/config.yml"
-    backup: yes
+    backup: true
     owner: "{{ os_user }}"
     group: "{{ os_user }}"
     mode: 0600
-    force: yes
+    force: true
   when: auth_type == 'oidc'
 
 - name: Security Plugin configuration | Prepare the opensearch security configuration file
@@ -175,7 +175,7 @@
     dest: "{{ os_home }}"
     owner: "{{ os_user }}"
     group: "{{ os_user }}"
-    recurse: yes
+    recurse: true
 
 - name: Security Plugin configuration | Set the folder permission
   file:
@@ -188,7 +188,7 @@
   systemd:
     name: opensearch
     state: restarted
-    enabled: yes
+    enabled: true
 
 - name: Pause for 10 seconds to provide sometime for OpenSearch start
   pause:
@@ -208,9 +208,9 @@
     dest: "{{ os_sec_plugin_conf_path }}/"
     owner: "{{ os_user }}"
     group: "{{ os_user }}"
-    backup: yes
+    backup: true
     mode: 0640
-    force: yes
+    force: true
   with_items: "{{ custom_security_plugin_configs }}"
   when: copy_custom_security_configs
 
