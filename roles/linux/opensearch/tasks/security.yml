@@ -191,7 +191,7 @@
     enabled: yes
 
 - name: Wait for opensearch to startup
-  wait_for: host={{ hostvars[inventory_hostname]['ip'] }} port={{os_api_port}} delay=5 connect_timeout=1
+  ansible.builtin.wait_for: host={{ hostvars[inventory_hostname]['ip'] }} port={{os_api_port}} delay=5 connect_timeout=1
 
 - name: Security Plugin configuration | Copy the opensearch security internal users template
   template:
