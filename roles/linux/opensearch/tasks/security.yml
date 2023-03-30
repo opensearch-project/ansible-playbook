@@ -190,9 +190,11 @@
     state: restarted
     enabled: yes
 
-- name: Pause for 10 seconds to provide sometime for OpenSearch start
-  pause:
-    seconds: 10
+- name: Wait until OpenSearch ist listening on port 9200
+  ansible.builtin.wait_for:
+    port: "{{ os_api_port }}"
+    delay: 10
+    timeout: 120
 
 - name: Security Plugin configuration | Copy the opensearch security internal users template
   template:
