@@ -53,8 +53,8 @@
 
 - name: Show the opensearch status
   debug:
-    msg: "{{ os_status.stdout }}"
-  failed_when: "'number_of_nodes' not in os_status.stdout"
+    msg: "{{ os_status.json }}"
+  failed_when: "'number_of_nodes' not in os_status.json"
 
 - name: Verify the roles of opensearch cluster nodes
   command: curl https://{{ inventory_hostname }}:9200/_cat/nodes?v -u 'admin:{{ admin_password }}' -k
