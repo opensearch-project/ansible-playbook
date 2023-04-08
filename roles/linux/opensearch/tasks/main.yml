@@ -57,11 +57,15 @@
   failed_when: "'number_of_nodes' not in os_status.json"
 
 - name: Verify the roles of opensearch cluster nodes
-  command: curl https://{{ inventory_hostname }}:9200/_cat/nodes?v -u 'admin:{{ admin_password }}' -k
+  ansible.builtin.uri:
+    url: "https://{{ inventory_hostname }}:9200/_cat/nodes?v"
+    user: admin
+    password: "{{ admin_password }}"
+    validate_certs: false
   register: os_roles
   run_once: true
 
 - name: Show the roles of opensearch cluster nodes
   debug:
-    msg: "{{ os_roles.stdout }}"
+    msg: "{{ os_roles }}"
   run_once: true
