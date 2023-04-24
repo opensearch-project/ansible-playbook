@@ -44,20 +44,28 @@
   wait_for: host={{ hostvars[inventory_hostname]['ip'] }} port={{os_api_port}} delay=5 connect_timeout=1
 
 - name: Check the opensearch status
-  command: curl https://{{ inventory_hostname }}:9200/_cluster/health?pretty -u 'admin:{{ admin_password }}' -k
+  ansible.builtin.uri:
+    url: "https://{{ inventory_hostname }}:9200/_cluster/health?pretty"
+    user: admin
+    password: "{{ admin_password }}"
+    validate_certs: false
   register: os_status
 
 - name: Show the opensearch status
   debug:
-    msg: "{{ os_status.stdout }}"
-  failed_when: "'number_of_nodes' not in os_status.stdout"
+    msg: "{{ os_status.json }}"
+  failed_when: "'number_of_nodes' not in os_status.json"
 
 - name: Verify the roles of opensearch cluster nodes
-  command: curl https://{{ inventory_hostname }}:9200/_cat/nodes?v -u 'admin:{{ admin_password }}' -k
+  ansible.builtin.uri:
+    url: "https://{{ inventory_hostname }}:9200/_cat/nodes?v"
+    user: admin
+    password: "{{ admin_password }}"
+    validate_certs: false
   register: os_roles
   run_once: true
 
 - name: Show the roles of opensearch cluster nodes
   debug:
-    msg: "{{ os_roles.stdout }}"
+    msg: "{{ os_roles }}"
   run_once: true
