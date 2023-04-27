@@ -42,7 +42,12 @@
     msg: "{{ list_plugins.stdout }}"
 
 - name: Wait for opensearch to startup
-  ansible.builtin.wait_for: host={{ hostvars[inventory_hostname]['ip'] }} port={{ os_api_port }} delay=5 connect_timeout=1
+  ansible.builtin.wait_for:
+    host: "{{ hostvars[inventory_hostname]['ip'] }}"
+    port: "{{ os_api_port }}"
+    delay: 5
+    connect_timeout: 1
+    timeout: 120
 
 - name: Check the opensearch status
   ansible.builtin.uri:
