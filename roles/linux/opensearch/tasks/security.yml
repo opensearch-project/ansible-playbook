@@ -61,13 +61,14 @@
   become: false
 
 - name: Security Plugin configuration | IaC enabled - Check certificate
+  when: iac_enable
   block:
     - name: Security Plugin configuration | Check cert exists
-      stat:
+      ansible.builtin.stat:
         path: "{{ item }}"
-        get_attributes: no
-        get_checksum: no
-        get_mime: no
+        get_attributes: false
+        get_checksum: false
+        get_mime: false
       register: cert_stat_result
       with_items:
         - "{{ os_conf_dir }}/root-ca.pem"
@@ -80,40 +81,39 @@
         - "{{ os_conf_dir }}/admin.pem"
 
     - name: Security Plugin configuration | Set fact. The initial value "Don't update certs"
-      set_fact:
+      ansible.builtin.set_fact:
         force_update_cert: false
 
     - name: Security Plugin configuration | Set fact. Update certificates if at least one certificate is not found
-      set_fact:
+      ansible.builtin.set_fact:
         force_update_cert: true
       with_items: "{{ cert_stat_result.results }}"
       when: item.stat.exists == False
 
     - name: Security Plugin configuration | Show the force_update_cert setting
-      debug:
+      ansible.builtin.debug:
         msg: "force_update_cert: {{ force_update_cert }}"
 
     - name: Security Plugin configuration | Count force_update_cert nodes
-      set_fact:
+      ansible.builtin.set_fact:
         force_update_cert_nodes_count: "{{ hostvars | dict2items | selectattr('value.force_update_cert', 'defined') | rejectattr('value.force_update_cert', 'equalto', false) | map(attribute='value.force_update_cert') | list | length }}"
 
     - name: Security Plugin configuration | Show the force_update_cert_nodes_count setting
-      debug:
+      ansible.builtin.debug:
         msg: "force_update_cert_nodes_count: {{ force_update_cert_nodes_count }}"
 
     - name: Security Plugin configuration | Do need to update certificates
-      debug:
+      ansible.builtin.debug:
         msg: "Need to update certificates..."
       when: force_update_cert_nodes_count | int > 0
-  when: iac_enable
 
 - name: Security Plugin configuration | IaC disabled - Count force_update_cert nodes
-  set_fact:
+  ansible.builtin.set_fact:
     force_update_cert_nodes_count: 0
   when: not iac_enable
 
 - name: Security Plugin configuration | Copy the node & admin certificates to opensearch nodes if at least one certificate is not found on at least one server
-  copy:
+  ansible.builtin.copy:
     src: "/tmp/opensearch-nodecerts/config/{{ item }}"
     dest: "{{ os_conf_dir }}"
     mode: 0600
@@ -129,25 +129,25 @@
   when: (configuration.changed and not iac_enable) or (iac_enable and force_update_cert_nodes_count | int > 0)
 
 - name: Security Plugin configuration | Copy the security configuration file 1 to cluster
-  blockinfile:
+  ansible.builtin.blockinfile:
     block: "{{ lookup('template', 'templates/security_conf.yml') }}"
     dest: "{{ os_conf_dir }}/opensearch.yml"
-    backup: yes
+    backup: true
     insertafter: EOF
     marker: "## {mark} OpenSearch Security common configuration ##"
   when: configuration.changed or iac_enable
 
 - name: Security Plugin configuration | Copy the security configuration file 2 to cluster
-  blockinfile:
+  ansible.builtin.blockinfile:
     block: "{{ lookup('file', '/tmp/opensearch-nodecerts/config/{{ inventory_hostname }}_elasticsearch_config_snippet.yml') }}"
     dest: "{{ os_conf_dir }}/opensearch.yml"
-    backup: yes
+    backup: true
     insertafter: EOF
     marker: "## {mark} opensearch Security Node & Admin certificates configuration ##"
   when: configuration.changed or iac_enable
 
 - name: Security Plugin configuration | Create security plugin configuration folder
-  file:
+  ansible.builtin.file:
     dest: "{{ os_sec_plugin_conf_path }}"
     owner: "{{ os_user }}"
     group: "{{ os_user }}"
@@ -156,47 +156,54 @@
   when: configuration.changed or iac_enable
 
 - name: Security Plugin configuration | Copy the security configuration file 3 to cluster
-  template:
+  ansible.builtin.template:
     src: security_plugin_conf.yml
     dest: "{{ os_sec_plugin_conf_path }}/config.yml"
-    backup: yes
+    backup: true
     owner: "{{ os_user }}"
     group: "{{ os_user }}"
     mode: 0600
-    force: yes
+    force: true
   when: auth_type == 'oidc'
 
 - name: Security Plugin configuration | Prepare the opensearch security configuration file
-  command: sed -i 's/searchguard/plugins.security/g' {{ os_conf_dir }}/opensearch.yml
+  ansible.builtin.command: sed -i 's/searchguard/plugins.security/g' {{ os_conf_dir }}/opensearch.yml
   when: configuration.changed or iac_enable
 
 - name: Security Plugin configuration | Set the file ownerships
-  file:
+  ansible.builtin.file:
     dest: "{{ os_home }}"
     owner: "{{ os_user }}"
     group: "{{ os_user }}"
-    recurse: yes
+    recurse: true
 
 - name: Security Plugin configuration | Set the folder permission
-  file:
+  ansible.builtin.file:
     dest: "{{ os_conf_dir }}"
     owner: "{{ os_user }}"
     group: "{{ os_user }}"
     mode: 0700
 
 - name: Security Plugin configuration | Restart opensearch with security configuration
-  systemd:
+  ansible.builtin.systemd:
     name: opensearch
     state: restarted
-    enabled: yes
+    enabled: true
 
+- name: Wait for opensearch to startup
+  ansible.builtin.wait_for:
+    host: "{{ hostvars[inventory_hostname]['ip'] }}"
+    port: "{{ os_api_port }}"
+    delay: 5
+    connect_timeout: 1
+    timeout: 120
 - name: Wait for opensearch to startup
   ansible.builtin.wait_for: host={{ hostvars[inventory_hostname]['ip'] }} port={{os_api_port}} delay=5 connect_timeout=1 timeout=120
 
 
 
 - name: Security Plugin configuration | Copy the opensearch security internal users template
-  template:
+  ansible.builtin.template:
     src: internal_users.yml
     dest: "{{ os_sec_plugin_conf_path }}/internal_users.yml"
     mode: 0644
@@ -204,19 +211,19 @@
   when: configuration.changed or iac_enable
 
 - name: Security Plugin configuration | Copy custom configuration files to cluster
-  template:
+  ansible.builtin.template:
     src: "{{ item }}"
     dest: "{{ os_sec_plugin_conf_path }}/"
     owner: "{{ os_user }}"
     group: "{{ os_user }}"
-    backup: yes
+    backup: true
     mode: 0640
-    force: yes
+    force: true
   with_items: "{{ custom_security_plugin_configs }}"
   when: copy_custom_security_configs
 
 - name: Security Plugin configuration | Set the Admin user password
-  shell: >
+  ansible.builtin.shell: >
     sed -i '/hash: / s,{{ admin_password }},'$(bash {{ os_sec_plugin_tools_path }}/hash.sh -p {{ admin_password }} | tail -1)','
     {{ os_sec_plugin_conf_path }}/internal_users.yml
   environment:
@@ -225,7 +232,7 @@
   when: configuration.changed or iac_enable
 
 - name: Security Plugin configuration | Set the kibanaserver user pasword
-  shell: >
+  ansible.builtin.shell: >
     sed -i '/hash: / s,{{ kibanaserver_password }},'$(bash {{ os_sec_plugin_tools_path }}/hash.sh -p {{ kibanaserver_password }} | tail -1)','
     {{ os_sec_plugin_conf_path }}/internal_users.yml
   environment:
@@ -234,7 +241,7 @@
   when: configuration.changed or iac_enable
 
 - name: Security Plugin configuration | Check that the files/internal_users.yml exists
-  stat:
+  ansible.builtin.stat:
     path: files/internal_users.yml
   register: custom_users_result
   delegate_to: localhost
@@ -242,10 +249,11 @@
   become: false
 
 - name: Security Plugin configuration | Check for a custom configuration for internal users and hash passwords for them
+  when: custom_users_result.stat.exists
   block:
 
     - name: Security Plugin configuration | Load custom internal users configuration
-      include_vars:
+      ansible.builtin.include_vars:
         file: files/internal_users.yml
         name: custom_users
       run_once: true
@@ -258,13 +266,13 @@
     # In this task, all usernames are selected from the file (excluding the _meta block), for which hashed
     # passwords will be written next
     - name: Security Plugin configuration | Filter service keys from the list of users
-      set_fact:
-        custom_users_filtered: '{{ custom_users|dict2items|rejectattr("key", "equalto", "_meta")|list|items2dict }}'
+      ansible.builtin.set_fact:
+        custom_users_filtered: '{{ custom_users | dict2items | rejectattr("key", "equalto", "_meta") | list | items2dict }}'
 
     # Hashed passwords are written for all users found in the previous task. Passwords are searched in variables
     # set by the user when starting the role (admin_password, kibanaserver_password, etc.).
     - name: Security Plugin configuration | Set passwords for all users from custom config
-      shell: >
+      ansible.builtin.shell: >
         sed -i '/hash: / s,{{ lookup('vars', item + '_password') }},'$(bash {{ os_sec_plugin_tools_path }}/hash.sh -p {{ lookup('vars', item + '_password') }} | tail -1)','
         {{ os_sec_plugin_conf_path }}/internal_users.yml
       environment:
@@ -273,10 +281,8 @@
       when: configuration.changed or copy_custom_security_configs
       with_items: "{{ custom_users_filtered }}"
 
-  when: custom_users_result.stat.exists
-
 - name: Security Plugin configuration | Initialize the opensearch security index in opensearch with custom configs
-  shell: >
+  ansible.builtin.shell: >
     bash {{ os_sec_plugin_tools_path }}/securityadmin.sh
     -cacert {{ os_conf_dir }}/root-ca.pem
     -cert {{ os_conf_dir }}/admin.pem
@@ -290,7 +296,7 @@
   when: configuration.changed and copy_custom_security_configs
 
 - name: Security Plugin configuration | Initialize the opensearch security index in opensearch with default configs
-  shell: >
+  ansible.builtin.shell: >
     bash {{ os_sec_plugin_tools_path }}/securityadmin.sh
     -cacert {{ os_conf_dir }}/root-ca.pem
     -cert {{ os_conf_dir }}/admin.pem
