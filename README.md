@@ -95,17 +95,17 @@ cluster_type: single-node
 
 
     # Deploy with ansible playbook - run the playbook as root
-    ansible-playbook -i inventories/opensearch/hosts opensearch.yml --extra-vars "admin_password=Test@123 kibanaserver_password=Test@6789"
+    ansible-playbook -i inventories/opensearch/hosts opensearch.yml --extra-vars "admin_password=Test@123 kibanaserver_password=Test@6789 logstash_password=Test@456"
 
-You should set the reserved users(`admin` and `kibanaserver`) password using `admin_password` and `kibanaserver_password` variables.
+You should set the reserved users(`admin`, `kibanaserver`, and `logstash`) password using `admin_password`, `kibanaserver_password`, and `logstash_password` variables.
 
-If you define your own internal users (in addition to the reserved `admin` and `kibanaserver`) in custom configuration 
+If you define your own internal users (in addition to the reserved `admin`, `kibanaserver`, and `logstash`) in custom configuration
 files, then passwords to them should be set via variables on the principle of `<username>_password`
 
 It will install and configure the opensearch. Once the deployment completed, you can access the opensearch Dashboards with user `admin` and password which you provided for variable `admin_password`.
 
     # Deploy with ansible playbook - run the playbook as non-root user which have sudo privileges,
-    ansible-playbook -i inventories/opensearch/hosts opensearch.yml --extra-vars "admin_password=Test@123 kibanaserver_password=Test@6789" --become
+    ansible-playbook -i inventories/opensearch/hosts opensearch.yml --extra-vars "admin_password=Test@123 kibanaserver_password=Test@6789 logstash_password=Test@456" --become
 
 **Note**: Change the user details in `ansible_user` parameter in `inventories/opensearch/hosts`  inventory file.
 
