@@ -1,33 +1,34 @@
 ---
 
-- hostname:
+- name: Set hostname
+  ansible.builtin.hostname:
     name: "{{ inventory_hostname }}"
 
 # Disabling for Amazon Linux 2 as selinux is disabled by default.
 - name: Disable the selinux
-  selinux:
+  ansible.posix.selinux:
     state: disabled
   when: (ansible_distribution != "Ubuntu") and (ansible_distribution != "Amazon")
 
 - name: Populate the nodes to /etc/hosts
-  import_tasks: etchosts.yml
+  ansible.builtin.import_tasks: etchosts.yml
 
 - name: Tune the system settings
-  import_tasks: tune.yml
+  ansible.builtin.import_tasks: tune.yml
 
-- name: include dashboards installation
-  include: dashboards.yml
+- name: Include dashboards installation
+  ansible.builtin.import_tasks: dashboards.yml
 
 - name: Make sure opensearch dashboards is started
-  service:
+  ansible.builtin.service:
     name: dashboards
     state: started
-    enabled: yes
+    enabled: true
 
 - name: Get all the installed dashboards plugins
-  command: "sudo -u {{ os_dashboards_user }} {{ os_plugin_bin_path }} list"
+  ansible.builtin.command: "sudo -u {{ os_dashboards_user }} {{ os_plugin_bin_path }} list"
   register: list_plugins
 
 - name: Show all the installed dashboards plugins
-  debug:
+  ansible.builtin.debug:
     msg: "{{ list_plugins.stdout }}"
