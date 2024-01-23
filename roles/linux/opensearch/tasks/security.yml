@@ -164,7 +164,7 @@
     group: "{{ os_user }}"
     mode: 0600
     force: true
-  when: auth_type == 'oidc'
+  when: auth_type == 'oidc' or copy_custom_security_configs
 
 - name: Security Plugin configuration | Prepare the opensearch security configuration file
   ansible.builtin.command: sed -i 's/searchguard/plugins.security/g' {{ os_conf_dir }}/opensearch.yml
