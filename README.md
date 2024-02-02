@@ -108,7 +108,7 @@ cluster_type: single-node
 
 You should set the reserved users(`admin`, `kibanaserver`, and `logstash`) password using `admin_password`, `kibanaserver_password`, and `logstash_password` variables.
 
-**Note**: Starting OpenSearch 2.12, a strong password is required for `admin` user, i.e. `myStrongPassword123!`. The cluster will fail to start with a weak password, i.e. `admin`
+**Note**: Starting OpenSearch 2.12, a strong password is required for `admin` user, i.e. `myStrongPassword123!`. The cluster will fail to start with a weak password (i.e. admin) or no password.
 
 If you define your own internal users (in addition to the reserved `admin`, `kibanaserver`, and `logstash`) in custom configuration
 files, then passwords to them should be set via variables on the principle of `<username>_password`
