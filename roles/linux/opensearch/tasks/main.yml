@@ -4,6 +4,14 @@
   ansible.builtin.hostname:
     name: "{{ inventory_hostname }}"
 
+- name: Include Variables for RedHat
+  ansible.builtin.include_vars: RedHat.yml
+  when: ansible_os_family == 'RedHat'
+
+- name: Include Variables for Debian
+  ansible.builtin.include_vars: Debian.yml
+  when: ansible_os_family == 'Debian'
+
 # Disabling for Amazon Linux 2 as selinux is disabled by default.
 - name: Disable the selinux
   ansible.posix.selinux:
@@ -17,7 +25,10 @@
   ansible.builtin.import_tasks: tune.yml
 
 - name: Include opensearch installation
-  ansible.builtin.import_tasks: opensearch.yml
+  ansible.builtin.import_tasks: installation.yml
+
+- name: Include configuration deployment
+  ansible.builtin.import_tasks: configuration.yml
 
 - name: Include security plugin for opensearch
   ansible.builtin.import_tasks: security.yml

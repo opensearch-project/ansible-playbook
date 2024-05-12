@@ -8,3 +8,8 @@
 
 - name: restart opensearch
   ansible.builtin.systemd: name=opensearch state=restarted enabled=yes
+
+
+- name: update repository cache
+  ansible.builtin.apt:
+    update_cache: yes

@@ -1,0 +1,88 @@
+---
+- name: OpenSearch Install | Install from .deb
+  when: ansible_os_family == 'Debian'
+  block:
+    - name: OpenSearch Install | Download GPG Key
+      ansible.builtin.get_url: 
+        url: https://artifacts.opensearch.org/publickeys/opensearch.pgp
+        dest: /tmp/opensearch.pgp
+
+    - name: OpenSearch Install | Install GPG Key
+      ansible.builtin.command: gpg --dearmor --batch --yes -o /usr/share/keyrings/opensearch-keyring /tmp/opensearch.pgp
+
+    - name: OpenSearch Install | Deploy deb repository file
+      ansible.builtin.apt_repository:
+        repo: deb [signed-by=/usr/share/keyrings/opensearch-keyring] https://artifacts.opensearch.org/releases/bundle/opensearch/2.x/apt stable main
+        state: present
+        filename: opensearch-core.list
+      notify: update repository cache
+
+    - name: OpenSearch Install | Flush handlers
+      meta: flush_handlers
+
+    - name: OpenSearch Install | Get installed Packages
+      package_facts:
+        manager: "auto"
+
+    - name: OpenSearch Install | Unhold opensearch
+      ansible.builtin.dpkg_selections:
+        name: opensearch
+        selection: install
+      when: "'opensearch' in ansible_facts.packages"
+
+    - name: OpenSearch Install | Install OpenSearch
+      ansible.builtin.apt:
+        name: opensearch={{ os_version }}
+        state: present
+      environment:
+        OPENSEARCH_INITIAL_ADMIN_PASSWORD: "{{ admin_password }}"
+
+    - name: OpenSearch Install | Hold opensearch
+      ansible.builtin.dpkg_selections:
+        name: opensearch
+        selection: hold
+
+- name: OpenSearch Install | Install from .rpm
+  when: ansible_os_family == 'RedHat'
+  block:
+    - name: OpenSearch Install | Install OpenSearch
+      ansible.builtin.yum:
+        name: https://artifacts.opensearch.org/releases/bundle/opensearch/{{ os_version }}/opensearch-{{ os_version }}-linux-x64.rpm
+        state: present
+        disable_gpg_check: true
+
+
+- name: OpenSearch Install | Install from tar
+  when: ansible_os_family != 'Debian' and ansible_os_family != 'RedHat'
+  block:
+    - name: OpenSearch Install | Download opensearch {{ os_version }}
+      ansible.builtin.get_url:
+        url: "{{ os_download_url }}/{{ os_version }}/opensearch-{{ os_version }}-linux-x64.tar.gz"
+        dest: "/tmp/opensearch.tar.gz"
+      register: download
+
+    - name: OpenSearch Install | Create opensearch user
+      ansible.builtin.user:
+        name: "{{ os_user }}"
+        state: present
+        shell: /bin/false
+        create_home: true
+        home: "{{ os_home }}"
+      when: download.changed or iac_enable
+
+    - name: OpenSearch Install | Create home directory
+      ansible.builtin.file:
+        path: "{{ os_home }}"
+        state: directory
+        owner: "{{ os_user }}"
+        group: "{{ os_user }}"
+      when: download.changed or iac_enable
+
+    - name: OpenSearch Install | Extract the tar file
+      ansible.builtin.command: chdir=/tmp/ tar -xvzf opensearch.tar.gz -C "{{ os_home }}" --strip-components=1
+      when: download.changed or iac_enable
+    
+    - name: OpenSearch Install | create systemd service
+      ansible.builtin.template:
+        src: opensearch.service
+        dest: "{{ systemctl_path }}/opensearch.service"

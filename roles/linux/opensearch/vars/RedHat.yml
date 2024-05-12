@@ -1,0 +1,5 @@
+os_home: /usr/share/opensearch
+os_conf_dir: /etc/opensearch
+os_plugin_bin_path: /usr/share/opensearch/bin/opensearch-plugin
+os_sec_plugin_conf_path: /etc/opensearch
+os_sec_plugin_tools_path: /usr/share/opensearch/plugins/opensearch-security/tools
