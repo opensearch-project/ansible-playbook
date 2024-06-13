@@ -4,11 +4,14 @@
   ansible.builtin.hostname:
     name: "{{ inventory_hostname }}"
 
-# Disabling for Amazon Linux 2 as selinux is disabled by default.
+# Disabling for Amazon Linux 2, Ubuntu and Debian as selinux is disabled by default.
 - name: Disable the selinux
   ansible.posix.selinux:
     state: disabled
-  when: (ansible_distribution != "Ubuntu") and (ansible_distribution != "Amazon")
+  when:
+    - ansible_distribution != "Ubuntu"
+    - ansible_distribution != "Amazon"
+    - ansible_distribution != "Debian"
 
 - name: Populate the nodes to /etc/hosts
   ansible.builtin.import_tasks: etchosts.yml
