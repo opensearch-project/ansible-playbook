@@ -117,6 +117,8 @@
     src: "/tmp/opensearch-nodecerts/config/{{ item }}"
     dest: "{{ os_conf_dir }}"
     mode: 0600
+    owner: "{{ os_user }}"
+    group: root
   with_items:
     - root-ca.pem
     - root-ca.key

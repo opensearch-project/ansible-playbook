@@ -1,0 +1,8 @@
+---
+- name: Include Debian-specific variables
+  include_vars: "{{ ansible_distribution }}.yml"
+  when: ansible_os_family == 'Debian'
+
+- name: Include RedHat-specific variables
+  include_vars: "{{ ansible_os_family }}.yml"
+  when: ansible_os_family == 'RedHat'
