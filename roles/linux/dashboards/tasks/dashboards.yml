@@ -6,21 +6,26 @@
     dest: "/tmp/opensearch-dashboards.tar.gz"
   register: download
 
-- name: Dashboards Install | Create opensearch dashboard user
+- name: Dashboards Install | Check if (( os_dashboards_user }} exists
+  ansible.builtin.command: "getent passwd {{ os_dashboards_user }}"
+  register: user_check
+  ignore_errors: true
+
+- name: Dashboards Install | Create {{ os_dashboards_user }} user
   ansible.builtin.user:
     name: "{{ os_dashboards_user }}"
     state: present
     shell: /bin/false
     create_home: true
     home: "{{ os_dashboards_home }}"
-  when: download.changed or iac_enable
+  when: (download.changed or iac_enable) and user_check.rc !=0
 
 - name: Dashboards Install | Create home directory
   ansible.builtin.file:
     path: "{{ os_dashboards_home }}"
     state: directory
     owner: "{{ os_dashboards_user }}"
-    group: "{{ os_dashboards_user }}"
+    group: "{{ os_dashboards_group }}"
   when: download.changed or iac_enable
 
 - name: Dashboards Install | Extract the tar file
@@ -32,7 +37,7 @@
     src: opensearch_dashboards.yml
     dest: "{{ os_conf_dir }}/opensearch_dashboards.yml"
     owner: "{{ os_dashboards_user }}"
-    group: "{{ os_dashboards_user }}"
+    group: "{{ os_dashboards_group }}"
     mode: 0644
     backup: true
 
@@ -40,14 +45,14 @@
   ansible.builtin.file:
     dest: "{{ os_dashboards_home }}"
     owner: "{{ os_dashboards_user }}"
-    group: "{{ os_dashboards_user }}"
+    group: "{{ os_dashboards_group }}"
     recurse: true
 
 - name: Dashboards Install | Set the folder permission
   ansible.builtin.file:
     dest: "{{ os_conf_dir }}"
     owner: "{{ os_dashboards_user }}"
-    group: "{{ os_dashboards_user }}"
+    group: "{{ os_dashboards_group }}"
     mode: 0700
 
 - name: Dashboards Install | create systemd service
