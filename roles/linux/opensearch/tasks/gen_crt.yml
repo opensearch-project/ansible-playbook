@@ -1,0 +1,48 @@
+---
+
+  - name: Generate root CA private key
+    community.crypto.openssl_privatekey:
+      path: "{{ opensearch_nodecerts_path }}/{{ ca.root.file | default('root-ca.pem') }}"
+      size: "{{ ca.root.keysize }}"
+
+  - name: Generate root CA certificate
+    community.crypto.x509_certificate:
+      path: "{{ opensearch_nodecerts_path }}/{{ ca.root.file | default('root-ca.pem') }}"
+      privatekey_path: "{{ opensearch_nodecerts_path }}/root-ca.key"
+      provider: selfsigned
+      subject:
+        CN: "{{ ca.root.dn }}"
+      valid_to: "+{{ ca.root.validityDays }}d"
+
+    - name: Generate certificates for OpenSearch nodes
+      loop: "{{ nodes }}"
+      loop_control:
+        loop_var: node
+      tasks:
+        - name: Generate private key for {{ node.name }}
+          community.crypto.openssl_privatekey:
+            path: "{{ opensearch_nodecerts_path }}/{{ node.name }}.key"
+            size: 2048
+
+        - name: Generate CSR for {{ node.name }}
+          community.crypto.openssl_csr:
+            path: "{{ opensearch_nodecerts_path }}/{{ node.name }}.csr"
+            privatekey_path: "{{ opensearch_nodecerts_path }}/{{ node.name }}.key"
+            common_name: "{{ node.dn }}"
+            subject_alt_name:
+              {% for dns in (node.dns if node.dns is iterable else [node.dns]) %}
+              - "DNS:{{ dns }}"
+              {% endfor %}
+              {% for ip in (node.ip if node.ip is iterable else [node.ip]) %}
+              - "IP:{{ ip }}"
+              {% endfor %}
+
+        - name: Generate certificate for {{ node.name }}
+          community.crypto.x509_certificate:
+            path: "{{ opensearch_nodecerts_path }}/{{ node.name }}.crt"
+            privatekey_path: "{{ opensearch_nodecerts_path }}/{{ node.name }}.key"
+            csr_path: "{{ opensearch_nodecerts_path }}/{{ node.name }}.csr"
+            provider: ownca
+            ownca_path: "{{ opensearch_nodecerts_path }}/root-ca.pem"
+            ownca_privatekey_path: "{{ opensearch_nodecerts_path }}/root-ca.key"
+            valid_to: "+{{ defaults.validityDays }}d"

@@ -5,7 +5,7 @@
 - name: Security Plugin configuration | Force remove local temporary directory for certificates generation
   local_action:
     module: file
-    path: "{{ opensearch_nodecerts_path }}"
+    path: /tmp/opensearch-nodecerts
     state: absent
   run_once: true
   become: false
@@ -14,29 +14,51 @@
 - name: Security Plugin configuration | Create local temporary directory for certificates generation
   local_action:
     module: file
-    path: "{{ opensearch_nodecerts_path }}"
+    path: /tmp/opensearch-nodecerts
     state: directory
   run_once: true
   register: configuration
+  become: false
+
+- name: Security Plugin configuration | Download certificates generation tool
+  local_action:
+    module: get_url
+    url: https://search.maven.org/remotecontent?filepath=com/floragunn/search-guard-tlstool/1.5/search-guard-tlstool-1.5.tar.gz
+    dest: /tmp/opensearch-nodecerts/search-guard-tlstool.tar.gz
+  run_once: true
+  when: configuration.changed
+  become: false
+
+- name: Security Plugin configuration | Extract the certificates generation tool
+  local_action: command chdir=/tmp/opensearch-nodecerts tar -xvf search-guard-tlstool.tar.gz
+  run_once: true
+  when: configuration.changed
+  become: false
+
+- name: Security Plugin configuration | Make the executable file
+  local_action:
+    module: file
+    dest: /tmp/opensearch-nodecerts/tools/sgtlstool.sh
+    mode: a+x
+  run_once: true
+  when: configuration.changed
   become: false
 
 - name: Security Plugin configuration | Prepare the certificates generation template file
   local_action:
     module: template
     src: tlsconfig.yml
-    dest: "{{ opensearch_nodecerts_path }}/config/tlsconfig.yml"
+    dest: /tmp/opensearch-nodecerts/config/tlsconfig.yml
   run_once: true
   when: configuration.changed
   become: false
 
 - name: Security Plugin configuration | Generate the node & admin certificates in local
-  import_tasks: gen_crt.yml
-  #run_once: true
-  delegate_to: localhost
+  local_action:
+    module: command /tmp/opensearch-nodecerts/tools/sgtlstool.sh -c /tmp/opensearch-nodecerts/config/tlsconfig.yml -ca -crt -t /tmp/opensearch-nodecerts/config/
+  run_once: true
   when: configuration.changed
   become: false
-  vars_files:
-    - "{{ opensearch_nodecerts_path }}/config/tlsconfig.yml"
 
 - name: Security Plugin configuration | IaC enabled - Check certificate
   when: iac_enable
@@ -92,7 +114,7 @@
 
 - name: Security Plugin configuration | Copy the node & admin certificates to opensearch nodes if at least one certificate is not found on at least one server
   ansible.builtin.copy:
-    src: "{{ opensearch_nodecerts_path}/config/{{ item }}"
+    src: "/tmp/opensearch-nodecerts/config/{{ item }}"
     dest: "{{ os_conf_dir }}"
     mode: 0600
   with_items:
@@ -117,7 +139,7 @@
 
 - name: Security Plugin configuration | Copy the security configuration file 2 to cluster
   ansible.builtin.blockinfile:
-    block: "{{ lookup('file', '{{ opensearch_nodecerts_path }}/config/{{ inventory_hostname }}_elasticsearch_config_snippet.yml') }}"
+    block: "{{ lookup('file', '/tmp/opensearch-nodecerts/config/{{ inventory_hostname }}_elasticsearch_config_snippet.yml') }}"
     dest: "{{ os_conf_dir }}/opensearch.yml"
     backup: true
     insertafter: EOF
@@ -286,7 +308,7 @@
 - name: Security Plugin configuration | Cleanup local temporary directory
   local_action:
     module: file
-    path: "{{ opensearch_nodecerts_path }}"
+    path: /tmp/opensearch-nodecerts
     state: absent
   run_once: true
   when: configuration.changed
