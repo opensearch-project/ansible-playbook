@@ -50,7 +50,7 @@ This ansible playbook supports the following,
 ### Prerequisite
 
 - **Ansible 2.9+**
-- **Java 8**
+- **Java 21**
 
 ### Configure
 
