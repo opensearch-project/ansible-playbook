@@ -20,45 +20,17 @@
   register: configuration
   become: false
 
-- name: Security Plugin configuration | Download certificates generation tool
-  local_action:
-    module: get_url
-    url: https://search.maven.org/remotecontent?filepath=com/floragunn/search-guard-tlstool/1.5/search-guard-tlstool-1.5.tar.gz
-    dest: /tmp/opensearch-nodecerts/search-guard-tlstool.tar.gz
-  run_once: true
-  when: configuration.changed
-  become: false
-
-- name: Security Plugin configuration | Extract the certificates generation tool
-  local_action: command chdir=/tmp/opensearch-nodecerts tar -xvf search-guard-tlstool.tar.gz
-  run_once: true
-  when: configuration.changed
-  become: false
-
-- name: Security Plugin configuration | Make the executable file
+- name: Security Plugin configuration | Create local temporary directory for certificates generation
   local_action:
     module: file
-    dest: /tmp/opensearch-nodecerts/tools/sgtlstool.sh
-    mode: a+x
+    path: /tmp/opensearch-nodecerts/config
+    state: directory
   run_once: true
-  when: configuration.changed
+  register: configuration
   become: false
 
-- name: Security Plugin configuration | Prepare the certificates generation template file
-  local_action:
-    module: template
-    src: tlsconfig.yml
-    dest: /tmp/opensearch-nodecerts/config/tlsconfig.yml
-  run_once: true
-  when: configuration.changed
-  become: false
-
-- name: Security Plugin configuration | Generate the node & admin certificates in local
-  local_action:
-    module: command /tmp/opensearch-nodecerts/tools/sgtlstool.sh -c /tmp/opensearch-nodecerts/config/tlsconfig.yml -ca -crt -t /tmp/opensearch-nodecerts/config/
-  run_once: true
-  when: configuration.changed
-  become: false
+- name: Create CRT
+  ansible.builtin.import_tasks: certificate.yml
 
 - name: Security Plugin configuration | IaC enabled - Check certificate
   when: iac_enable
@@ -137,15 +109,6 @@
     marker: "## {mark} OpenSearch Security common configuration ##"
   when: configuration.changed or iac_enable
 
-- name: Security Plugin configuration | Copy the security configuration file 2 to cluster
-  ansible.builtin.blockinfile:
-    block: "{{ lookup('file', '/tmp/opensearch-nodecerts/config/{{ inventory_hostname }}_elasticsearch_config_snippet.yml') }}"
-    dest: "{{ os_conf_dir }}/opensearch.yml"
-    backup: true
-    insertafter: EOF
-    marker: "## {mark} opensearch Security Node & Admin certificates configuration ##"
-  when: configuration.changed or iac_enable
-
 - name: Security Plugin configuration | Create security plugin configuration folder
   ansible.builtin.file:
     dest: "{{ os_sec_plugin_conf_path }}"
@@ -165,10 +128,6 @@
     mode: 0600
     force: true
   when: auth_type == 'oidc' or copy_custom_security_configs
-
-- name: Security Plugin configuration | Prepare the opensearch security configuration file
-  ansible.builtin.command: sed -i 's/searchguard/plugins.security/g' {{ os_conf_dir }}/opensearch.yml
-  when: configuration.changed or iac_enable
 
 - name: Security Plugin configuration | Set the file ownerships
   ansible.builtin.file:
