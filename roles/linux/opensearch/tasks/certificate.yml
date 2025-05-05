@@ -1,0 +1,123 @@
+---
+  - name: Security Plugin configuration | Generate root CA private key (4096 bits, RSA)
+    community.crypto.openssl_privatekey:
+      path: /tmp/opensearch-nodecerts/config/root-ca.key
+      format: pkcs8
+      cipher: auto
+    delegate_to: localhost
+    run_once: true
+
+  - name: Security Plugin configuration | Create certificate signing request (CSR) for CA certificate
+    community.crypto.openssl_csr_pipe:
+      privatekey_path: /tmp/opensearch-nodecerts/config/root-ca.key
+      common_name: "opensearch_root_ca.{{ domain_name }}"
+      use_common_name_for_san: false 
+      basic_constraints:
+        - 'CA:TRUE'
+      basic_constraints_critical: true
+      key_usage:
+        - keyCertSign
+      key_usage_critical: true
+    register: ca_csr
+    delegate_to: localhost
+
+  - name: Security Plugin configuration | Create self-signed CA certificate from CSR
+    community.crypto.x509_certificate:
+      path: /tmp/opensearch-nodecerts/config/root-ca.pem
+      csr_content: "{{ ca_csr.csr }}"
+      privatekey_path: /tmp/opensearch-nodecerts/config/root-ca.key
+      provider: selfsigned
+    delegate_to: localhost
+    
+  - name: Security Plugin configuration | Create Node private key (4096 bits, RSA)
+    community.crypto.openssl_privatekey:
+      path: "/tmp/opensearch-nodecerts/config/{{ item }}.key"
+      format: pkcs8
+      cipher: auto
+    loop: "{{ groups['os-cluster'] }}"
+    delegate_to: localhost
+    run_once: true
+
+  - name: Security Plugin configuration | Create HTTP Node private key (4096 bits, RSA)
+    community.crypto.openssl_privatekey:
+      path: "/tmp/opensearch-nodecerts/config/{{ item }}_http.key"
+      format: pkcs8
+      cipher: auto
+    loop: "{{ groups['os-cluster'] }}"
+    delegate_to: localhost
+    run_once: true
+    
+  - name: Security Plugin configuration | Create Admin private key (4096 bits, RSA)
+    community.crypto.openssl_privatekey:
+      path: /tmp/opensearch-nodecerts/config/admin.key
+      format: pkcs8
+      cipher: auto
+    delegate_to: localhost
+    run_once: true
+    #openssl pkcs8 -in /etc/opensearch/cert/admin.key.pem -topk8 -out /etc/opensearch/cert/new_admin.key.pem -v1 PBE-SHA1-3DES
+
+  - name: Security Plugin configuration | Create Node certificate signing request (CSR)
+    community.crypto.openssl_csr:
+      path: "/tmp/opensearch-nodecerts/config/{{ item }}.csr"
+      privatekey_path: "/tmp/opensearch-nodecerts/config/{{ item }}.key"
+      common_name: "{{ item }}.{{ domain_name }}"
+      organization_name: "{{ domain_name }}"
+      organizational_unit_name: "Os"
+      subject_alt_name: "DNS:{{ item }}"
+    loop: "{{ groups['os-cluster'] }}"
+    delegate_to: localhost
+    run_once: true
+
+  - name: Security Plugin configuration | Create Node HTTP certificate signing request (CSR)
+    community.crypto.openssl_csr:
+      path: "/tmp/opensearch-nodecerts/config/{{ item }}_http.csr"
+      privatekey_path: "/tmp/opensearch-nodecerts/config/{{ item }}_http.key"
+      common_name: "{{ item }}.{{ domain_name }}"
+      organization_name: "{{ domain_name }}"
+      organizational_unit_name: "Os"
+      subject_alt_name: "DNS:{{ item }}"
+    loop: "{{ groups['os-cluster'] }}"
+    delegate_to: localhost
+    run_once: true
+
+  - name: Security Plugin configuration | Create Admin signing request (CSR)
+    community.crypto.openssl_csr:
+      path: /tmp/opensearch-nodecerts/config/admin.csr
+      privatekey_path: /tmp/opensearch-nodecerts/config/admin.key
+      common_name: "admin.{{ domain_name }}"
+      organization_name: "{{ domain_name }}"
+      organizational_unit_name: "Os"
+    delegate_to: localhost
+    run_once: true
+
+  - name: Security Plugin configuration | Create self-signed Node certificate from CSR
+    community.crypto.x509_certificate:
+      path: "/tmp/opensearch-nodecerts/config/{{ item }}.pem"
+      csr_path: "/tmp/opensearch-nodecerts/config/{{ item }}.csr"
+      ownca_path: "/tmp/opensearch-nodecerts/config/root-ca.pem"
+      ownca_privatekey_path: "/tmp/opensearch-nodecerts/config/root-ca.key"
+      provider: ownca
+    loop: "{{ groups['os-cluster'] }}"
+    delegate_to: localhost
+    run_once: true
+
+  - name: Security Plugin configuration | Create self-signed HTTP Node certificate from CSR
+    community.crypto.x509_certificate:
+      path: "/tmp/opensearch-nodecerts/config/{{ item }}_http.pem"
+      csr_path: "/tmp/opensearch-nodecerts/config/{{ item }}_http.csr"
+      ownca_path: "/tmp/opensearch-nodecerts/config/root-ca.pem"
+      ownca_privatekey_path: "/tmp/opensearch-nodecerts/config/root-ca.key"
+      provider: ownca
+    loop: "{{ groups['os-cluster'] }}"
+    delegate_to: localhost
+    run_once: true
+
+  - name: Security Plugin configuration | Create self-signed Admin certificate from CSR
+    community.crypto.x509_certificate:
+      path: "/tmp/opensearch-nodecerts/config/admin.pem"
+      csr_path: "/tmp/opensearch-nodecerts/config/admin.csr"
+      ownca_path: "/tmp/opensearch-nodecerts/config/root-ca.pem"
+      ownca_privatekey_path: "/tmp/opensearch-nodecerts/config/root-ca.key"
+      provider: ownca
+    delegate_to: localhost
+    run_once: true

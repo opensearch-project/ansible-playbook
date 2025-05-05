@@ -23,3 +23,4 @@ systemctl_path: /etc/systemd/system
 
 # Auth type: 'internal' or 'oidc' (OpenID). Default: internal
 auth_type: internal
+opensearch_nodecerts_path: /tmp/opensearch-nodecerts
