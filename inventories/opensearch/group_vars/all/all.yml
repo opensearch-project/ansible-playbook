@@ -7,11 +7,11 @@ os_download_url: https://artifacts.opensearch.org/releases/bundle/opensearch
 
 # opensearch version
 # 3.x Latest Version
-os_version: "3.2.0"
+os_version: "3.3.0"
 
 # opensearch dashboards version
 # 3.x Latest Version
-os_dashboards_version: "3.2.0"
+os_dashboards_version: "3.3.0"
 
 # Configure hostnames for opensearch nodes
 # It is required to configure SSL
