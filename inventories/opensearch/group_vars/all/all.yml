@@ -7,7 +7,7 @@ os_download_url: https://artifacts.opensearch.org/releases/bundle/opensearch
 
 # opensearch version
 # 3.x Latest Version
-os_version: "3.3.1"
+os_version: "3.3.2"
 
 # opensearch dashboards version
 # 3.x Latest Version
