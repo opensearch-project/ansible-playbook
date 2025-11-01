@@ -150,7 +150,7 @@
   ansible.builtin.file:
     dest: "{{ os_sec_plugin_conf_path }}"
     owner: "{{ os_user }}"
-    group: "{{ os_user }}"
+    group: "{{ os_group }}"
     mode: 0700
     state: directory
   when: configuration.changed or iac_enable
@@ -161,7 +161,7 @@
     dest: "{{ os_sec_plugin_conf_path }}/config.yml"
     backup: true
     owner: "{{ os_user }}"
-    group: "{{ os_user }}"
+    group: "{{ os_group }}"
     mode: 0600
     force: true
   when: auth_type == 'oidc' or copy_custom_security_configs
@@ -174,14 +174,14 @@
   ansible.builtin.file:
     dest: "{{ os_home }}"
     owner: "{{ os_user }}"
-    group: "{{ os_user }}"
+    group: "{{ os_group }}"
     recurse: true
 
 - name: Security Plugin configuration | Set the folder permission
   ansible.builtin.file:
     dest: "{{ os_conf_dir }}"
     owner: "{{ os_user }}"
-    group: "{{ os_user }}"
+    group: "{{ os_group }}"
     mode: 0700
 
 - name: Security Plugin configuration | Restart opensearch with security configuration
@@ -211,7 +211,7 @@
     src: "{{ item }}"
     dest: "{{ os_sec_plugin_conf_path }}/"
     owner: "{{ os_user }}"
-    group: "{{ os_user }}"
+    group: "{{ os_group }}"
     backup: true
     mode: 0640
     force: true
