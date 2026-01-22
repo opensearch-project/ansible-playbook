@@ -28,8 +28,10 @@ cluster_type: multi-node
 
 # opensearch user info
 os_user: opensearch
+os_group: opensearch
 
 os_dashboards_user: opensearch-dashboards
+os_dashboards_group: opensearch-dashboards
 
 # Number of days that certificates are valid
 cert_valid_days: 730

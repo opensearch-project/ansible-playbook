@@ -6,21 +6,36 @@
     dest: "/tmp/opensearch.tar.gz"
   register: download
 
-- name: OpenSearch Install | Create opensearch user
+- name: Opensearch Install | Check if {{ os_user }} user exists
+  ansible.builtin.command: "getent passwd {{ os_user }}"
+  register: user_check
+  ignore_errors: true
+
+- name: Opensearch Install | Create {{ os_user }} user
+  ansible.builtin.user:
+    name: "{{ os_user }}"
+    state: present
+    group: "{{ os_group }}"
+    shell: /bin/false
+    create_home: true
+    home: "{{ os_home }}"
+  when: (download.changed or iac_enable) and user_check.rc != 0
+
+- name: OpenSearch Install | Create {{ os_user }} 
   ansible.builtin.user:
     name: "{{ os_user }}"
     state: present
     shell: /bin/false
     create_home: true
     home: "{{ os_home }}"
-  when: download.changed or iac_enable
+  when: (download.changed or iac_enable) and user_check.rc != 0
 
 - name: OpenSearch Install | Create home directory
   ansible.builtin.file:
     path: "{{ os_home }}"
     state: directory
     owner: "{{ os_user }}"
-    group: "{{ os_user }}"
+    group: "{{ os_group }}"
   when: download.changed or iac_enable
 
 - name: OpenSearch Install | Extract the tar file
@@ -36,7 +51,7 @@
     create: true
     marker: "## {mark} opensearch main configuration ##"
     owner: "{{ os_user }}"
-    group: "{{ os_user }}"
+    group: "{{ os_group }}"
     mode: 0600
 
 - name: OpenSearch Install | Copy jvm.options File for Instance
@@ -44,7 +59,7 @@
     src: jvm.options
     dest: "{{ os_conf_dir }}/jvm.options"
     owner: "{{ os_user }}"
-    group: "{{ os_user }}"
+    group: "{{ os_group }}"
     mode: 0600
     force: true
 
