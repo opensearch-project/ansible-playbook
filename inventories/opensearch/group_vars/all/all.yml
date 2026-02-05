@@ -92,3 +92,6 @@ custom_security_plugin_configs:
 # /tmp/opensearch-nodecerts directory was missing on the server from which the
 # playbook was launched and new certificates were generated)
 iac_enable: false
+
+## change /tmp dir if /tmp is mounted with noexec
+os_tmp_dir: /var/lib/opensearch/tmp
