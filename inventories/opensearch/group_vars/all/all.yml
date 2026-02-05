@@ -94,4 +94,4 @@ custom_security_plugin_configs:
 iac_enable: false
 
 ## change /tmp dir if /tmp is mounted with noexec
-os_tmp_dir: /var/lib/opensearch/tmp
+custom_tmp_dir: /var/lib/opensearch/tmp
