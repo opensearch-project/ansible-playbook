@@ -87,7 +87,8 @@
 21-:-javaagent:agent/opensearch-agent.jar
 21-:--add-opens=java.base/java.nio=org.apache.arrow.memory.core,ALL-UNNAMED
 
-## Custom temp directory (avoid /tmp with noexec issue)
+
 {% if curstom_tmp_dir is defined %}
+## Custom temp directory (avoid /tmp with noexec issue)
 -Djava.io.tmpdir={{ custom_tmp_dir }}
 {% endif %}
