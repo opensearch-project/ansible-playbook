@@ -92,3 +92,9 @@ custom_security_plugin_configs:
 # /tmp/opensearch-nodecerts directory was missing on the server from which the
 # playbook was launched and new certificates were generated)
 iac_enable: false
+
+# OpenSearch temporary directory configuration
+# By default, OpenSearch uses /tmp for temporary files.
+# If /tmp is mounted with the 'noexec' option, you need to specify an alternative directory.
+# To configure a custom temporary directory, uncomment the following line:
+# custom_tmp_dir: /var/lib/opensearch/tmp

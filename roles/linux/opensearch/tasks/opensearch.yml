@@ -48,6 +48,15 @@
     mode: 0600
     force: true
 
+- name: Create custom OpenSearch tmp directory
+  ansible.builtin.file:
+    path: "{{ custom_tmp_dir }}"
+    state: directory
+    owner: "{{ os_user }}"
+    group: "{{ os_user }}"
+    mode: '0755'
+  when: custom_tmp_dir is defined
+
 - name: OpenSearch Install | create systemd service
   ansible.builtin.template:
     src: opensearch.service
