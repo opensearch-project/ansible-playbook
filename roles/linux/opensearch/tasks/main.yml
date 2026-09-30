@@ -55,8 +55,9 @@
 - name: Check the opensearch status
   ansible.builtin.uri:
     url: "https://{{ inventory_hostname }}:9200/_cluster/health?pretty"
-    user: admin
-    password: "{{ admin_password }}"
+    url_username: admin
+    url_password: "{{ admin_password }}"
+    force_basic_auth: true
     validate_certs: false
   register: os_status
 
@@ -68,8 +69,9 @@
 - name: Verify the roles of opensearch cluster nodes
   ansible.builtin.uri:
     url: "https://{{ inventory_hostname }}:9200/_cat/nodes?v"
-    user: admin
-    password: "{{ admin_password }}"
+    url_username: admin
+    url_password: "{{ admin_password }}"
+    force_basic_auth: true
     validate_certs: false
   register: os_roles
   run_once: true
