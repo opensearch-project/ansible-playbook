@@ -3,7 +3,7 @@
 - name: OpenSearch Install | Download opensearch {{ os_version }}
   ansible.builtin.get_url:
     url: "{{ os_download_url }}/{{ os_version }}/opensearch-{{ os_version }}-linux-x64.tar.gz"
-    dest: "/tmp/opensearch.tar.gz"
+    dest: "/tmp/opensearch-{{ os_version }}.tar.gz"
   register: download
 
 - name: OpenSearch Install | Create opensearch user
@@ -23,8 +23,28 @@
     group: "{{ os_user }}"
   when: download.changed or iac_enable
 
+- name: OpenSearch Install | Delete old files
+  ansible.builtin.command: chdir=/tmp/ tar -xvzf opensearch-{{ os_version }}.tar.gz -C "{{ os_home }}" --strip-components=1
+  when: download.changed or iac_enable
+  ignore_errors: true
+  ansible.builtin.file:
+    state: absent
+    path: "{{ os_home }}/{{ item }}"
+  loop:
+    - LICENSE.txt
+    - NOTICE.txt
+    - README.md
+    - bin
+    - jdk
+    - lib
+    - manifest.yml
+    - modules
+    - opensearch-tar-install.sh
+    - performance-analyzer-rca
+    - plugins
+
 - name: OpenSearch Install | Extract the tar file
-  ansible.builtin.command: chdir=/tmp/ tar -xvzf opensearch.tar.gz -C "{{ os_home }}" --strip-components=1
+  ansible.builtin.command: chdir=/tmp/ tar -xvzf opensearch-{{ os_version }}.tar.gz -C "{{ os_home }}" --strip-components=1
   when: download.changed or iac_enable
 
 - name: OpenSearch Install | Copy Configuration File
