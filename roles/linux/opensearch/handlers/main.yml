@@ -2,7 +2,8 @@
 # handlers file for opensearch
 - name: reload systemd configuration
   become: true
-  ansible.builtin.command: systemctl daemon-reload
+  ansible.builtin.systemd:
+    daemon_reload: true
 
 # Restart service and ensure it is enabled
 
