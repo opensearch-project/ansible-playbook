@@ -275,7 +275,7 @@
         JAVA_HOME: "{{ os_home }}/jdk"
       run_once: true
       when: configuration.changed or copy_custom_security_configs
-      with_items: "{{ custom_users_filtered }}"
+      loop: "{{ custom_users_filtered.keys() | list }}"
 
 - name: Security Plugin configuration | Initialize the opensearch security index in opensearch with custom configs
   ansible.builtin.shell: >
