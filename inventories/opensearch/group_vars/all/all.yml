@@ -11,7 +11,7 @@ os_version: "3.10.1"
 
 # opensearch dashboards version
 # 3.x Latest Version
-os_dashboards_version: "3.10.1"
+os_dashboards_version: "3.10.0"
 
 # Configure hostnames for opensearch nodes
 # It is required to configure SSL
