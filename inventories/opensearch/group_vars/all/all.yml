@@ -11,7 +11,7 @@ os_version: "2.19.8"
 
 # opensearch dashboards version
 # 2.x Latest Version
-os_dashboards_version: "2.19.8"
+os_dashboards_version: "2.19.7"
 
 # Configure hostnames for opensearch nodes
 # It is required to configure SSL
